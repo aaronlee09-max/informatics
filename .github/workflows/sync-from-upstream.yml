@@ -31,6 +31,7 @@ jobs:
             --exclude='.git' \
             --exclude='CNAME' \
             --exclude='.github' \
+            --exclude='tools' \
             --exclude='*_정답.ipynb' \
             --exclude='ai/index.html' \
             --exclude='informatics/index.html' \
