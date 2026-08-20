@@ -31,12 +31,15 @@ jobs:
             --exclude='.git' \
             --exclude='CNAME' \
             --exclude='.github' \
-            --exclude='tools' \
             --exclude='*_정답.ipynb' \
             --exclude='ai/index.html' \
             --exclude='informatics/index.html' \
+            --exclude='informatics/ch2-3/index.html' \
+            --exclude='informatics/ch2-3/*.ipynb' \
+            --exclude='informatics/ch2-3/*.csv' \
             --exclude='informatics/ch3-3/index.html' \
             --exclude='informatics/ch3-4/index.html' \
+            --exclude='tools/' \
             /tmp/upstream/ ./
 
           if [ -f /tmp/CNAME.bak ]; then
