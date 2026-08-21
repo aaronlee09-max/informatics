@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ko">
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>I. 인공지능의 이해</title>
+<style>*{box-sizing:border-box}body{margin:0;background:#f7fafc;color:#172033;font-family:"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif}main{width:min(880px,calc(100% - 48px));margin:0 auto;padding:64px 0}a{color:#2563eb;font-weight:800;text-decoration:none}h1{margin:36px 0 12px;font-size:clamp(36px,6vw,64px);line-height:1.05}.lead{color:#5c6b7d;font-size:18px;font-weight:700;line-height:1.55}.card{margin-top:18px;border:2px solid #d7e0ea;border-radius:12px;background:#fff;padding:22px 24px;box-shadow:0 10px 30px rgba(23,32,51,.06)}.card h2{margin:0 0 10px;font-size:24px}.card p,.card li{color:#334155;line-height:1.6}.quiz{display:grid;gap:10px}button{width:max-content;border:0;border-radius:999px;padding:10px 16px;background:#7c3aed;color:#fff;font-weight:900;cursor:pointer}.ok{color:#047857;font-weight:800}.no{color:#b45309;font-weight:800}.btn{display:inline-flex;margin-top:16px;border-radius:999px;padding:12px 18px;background:#f3efff;color:#7c3aed}</style></head>
+<body><main>
+<a href="./">← 교과서 목차</a>
+<h1>I. 인공지능의 이해</h1>
+<p class="lead">실생활 문제를 인공지능 관점으로 보고, 탐색과 추론으로 풀어 보는 단원입니다.</p>
+<section class="card"><h2>01 인공지능의 원리 · p.14</h2><ul><li>지능의 이해</li><li>인공지능의 이해</li><li>인공지능 시스템의 이해</li></ul><p>일반 소프트웨어는 정해진 규칙으로 계산하고, 인공지능 소프트웨어는 데이터와 목표를 보고 판단·학습합니다. 지능 에이전트는 센서 정보를 받아 스스로 행동합니다.</p></section>
+<section class="card"><h2>02 인공지능과 탐색 · p.26</h2><ul><li>문제 해결과 탐색</li><li>맹목적 탐색</li><li>지능적 탐색</li><li>탐색의 다양한 문제 해결 사례</li></ul><p>상태 공간에서 길을 찾는 것이 탐색입니다. 맹목적 탐색은 너비/깊이처럼 규칙만 따르고, 지능적 탐색은 휴리스틱으로 더 빠리 목표에 다가갑니다. A*는 지금까지 온 비용과 남은 예상 비용을 더해 다음 칸을 고릅니다.</p></section>
+<section class="card"><h2>03 지식의 표현과 추론 · p.42</h2><ul><li>인공지능과 지식 추론</li></ul><p>지식을 기호로 표현하면 컴퓨터가 규칙으로 새로운 사실을 이끄어 낼 수 있습니다.</p></section>
+<section class="card"><h2>확인 퀴즈</h2><div class="quiz">
+<label><input type="radio" name="q1" value="a" /> 일반 소프트웨어와 인공지능 소프트웨어는 항상 같은 방식으로 동작한다.</label>
+<label><input type="radio" name="q1" value="b" /> 지능적 탐색은 휴리스틱을 써서 목표에 더 가깝게 길을 고른다.</label>
+<label><input type="radio" name="q1" value="c" /> A*는 휴리스틱만 보고 지금까지의 비용은 무시한다.</label>
+<button type="button" id="check">정답 확인</button><p id="result"></p></div></section>
+<a class="btn" href="https://view.chunjae.co.kr/streamdocs/view/sd;streamdocsId=gcUCb2n_3DQ2hN6rG-H4Tocz8cXQobSaVOoM5bLVkQc;isExternal=eQ;printUse=;enableDapSide=;pageView=" target="_blank" rel="noopener">공식 뷰어에서 I단원 보기</a>
+</main>
+<script>document.getElementById("check").onclick=function(){var p=document.querySelector('input[name="q1"]:checked');var b=document.getElementById("result");if(!p){b.textContent="보기를 골라 주세요.";b.className="no";return;}if(p.value==="b"){b.textContent="맞아요. 지능적 탐색은 휴리스틱으로 더 나은 다음 상태를 고릅니다.";b.className="ok";}else{b.textContent="다시 보면 좋아요. 정답은 두 번째 보기입니다.";b.className="no";}};</script>
+</body></html>
