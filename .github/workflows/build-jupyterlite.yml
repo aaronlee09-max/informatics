@@ -1,0 +1,71 @@
+name: Build JupyterLite
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'ai/ch2-1/**/*.ipynb'
+      - 'ai/ch2-2/**/*.ipynb'
+      - 'ai/ch2-1/**/*.csv'
+      - 'ai/ch2-2/**/*.csv'
+      - '.github/workflows/build-jupyterlite.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install JupyterLite
+        run: |
+          pip install -q jupyterlite-core==0.8.3 jupyterlite-pyodide-kernel==0.8.5 jupyter-server
+
+      - name: Stage notebook contents
+        run: |
+          mkdir -p /tmp/jlite-contents/ch2-1 /tmp/jlite-contents/ch2-2/2 /tmp/jlite-contents/ch2-2/3 /tmp/jlite-contents/ch2-2/4
+          find ai/ch2-1 -maxdepth 1 -name '*.ipynb' ! -name '*정답*' -exec cp {} /tmp/jlite-contents/ch2-1/ \;
+          find ai/ch2-1 -maxdepth 1 -name '*.csv' -exec cp {} /tmp/jlite-contents/ch2-1/ \;
+          for sub in 2 3 4; do
+            if [ -d "ai/ch2-2/$sub" ]; then
+              find "ai/ch2-2/$sub" -maxdepth 1 -name '*.ipynb' ! -name '*정답*' -exec cp {} "/tmp/jlite-contents/ch2-2/$sub/" \;
+              find "ai/ch2-2/$sub" -maxdepth 1 -name '*.csv' -exec cp {} "/tmp/jlite-contents/ch2-2/$sub/" \;
+            fi
+          done
+          find /tmp/jlite-contents -type f | sort
+
+      - name: Build JupyterLite
+        run: |
+          cat > /tmp/jupyter-lite.json << 'EOF'
+          {
+            "jupyter-lite-schema-version": 0,
+            "jupyter-config-data": {
+              "appName": "AI 실습 JupyterLite",
+              "collaborative": false
+            }
+          }
+          EOF
+          cd /tmp
+          jupyter lite build --contents /tmp/jlite-contents --output-dir /tmp/jlite-out
+          du -sh /tmp/jlite-out
+
+      - name: Commit to ai/jlite
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          rm -rf ai/jlite
+          mkdir -p ai/jlite
+          cp -a /tmp/jlite-out/. ai/jlite/
+          git add -A ai/jlite
+          if git diff --staged --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Build JupyterLite for on-site notebook execution"
+            git push origin HEAD:main
+          fi
