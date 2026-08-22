@@ -1,30 +1,72 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>인공지능 프로젝트</title><link rel="stylesheet" href="../textbook/deck.css" /></head>
-<body>
-<a class="home" href="../">← 인공지능 기초</a>
-<main class="deck">
-<section class="slide active"><div class="slide-header"><p class="unit">01</p><p class="page-ref">p.200</p><h1>지속가능발전목표와 인공지능</h1><p class="subtitle">먼저 문제를 고르고, 그다음 모델을 고릅니다.</p></div>
-<div class="grid-3"><article class="card"><h2>기후</h2><p>배출·기온 예측</p></article><article class="card"><h2>폐기물</h2><p>분류와 발생량 예측</p></article><article class="card"><h2>에너지</h2><p>낭비 줄이기</p></article></div></section>
-<section class="slide"><div class="slide-header"><p class="unit">02</p><p class="page-ref">p.204</p><h1>프로젝트 순서</h1></div>
-<div class="node-map"><div class="node">문제 정의</div><span class="arrow">→</span><div class="node">데이터</div><span class="arrow">→</span><div class="node">학습</div><span class="arrow">→</span><div class="node">평가</div><span class="arrow">→</span><div class="node">개선</div></div>
-<article class="card"><p>II단원 실습을 이 순서에 다시 올려 쓰면 프로젝트가 됩니다.</p></article></section>
-<section class="slide"><div class="slide-header"><p class="unit">03</p><p class="page-ref">p.204</p><h1>우리 팀 점검표</h1></div>
-<article class="card check-list">
-<label><input type="checkbox" class="step" /> 문제를 한 문장 질문으로 적었다</label>
-<label><input type="checkbox" class="step" /> 정형/비정형을 정했다</label>
-<label><input type="checkbox" class="step" /> 회귀/분류/군집을 골랐다</label>
-<label><input type="checkbox" class="step" /> 훈련/테스트를 나누었다</label>
-<label><input type="checkbox" class="step" /> 성능과 한계를 글로 남겼다</label>
-<p id="progress" class="ok"></p></article></section>
-<section class="slide"><div class="slide-header"><p class="unit">04</p><h1>확인하기</h1></div>
-<div class="card quiz"><p>프로젝트를 시작할 때 먼저 할 일은?</p>
-<label><input type="radio" name="q1" value="a" /> 모델부터 학습</label>
-<label><input type="radio" name="q1" value="b" /> 문제를 질문으로 정의</label>
-<label><input type="radio" name="q1" value="c" /> 평가 생략</label>
-<button type="button" onclick="checkQ()">정답 확인</button><p id="r1"></p></div></section>
-</main>
-<button class="nav-zone nav-prev" type="button"></button><button class="nav-zone nav-next" type="button"></button>
-<div class="footer"><div class="dots"></div><p><span id="currentSlide">1</span> / <span id="totalSlides">1</span></p></div>
-<script src="../textbook/deck.js"></script>
-<script>var boxes=Array.from(document.querySelectorAll(".step"));var saved=JSON.parse(localStorage.getItem("ai-project-check")||"[]");boxes.forEach(function(b,i){b.checked=!!saved[i]});function render(){var n=boxes.filter(function(b){return b.checked}).length;document.getElementById("progress").textContent=n+" / "+boxes.length+" 완료";localStorage.setItem("ai-project-check",JSON.stringify(boxes.map(function(b){return b.checked})));}boxes.forEach(function(b){b.addEventListener("change",render)});render();function checkQ(){var p=document.querySelector('input[name="q1"]:checked');var box=document.getElementById("r1");if(!p){box.className="no";box.textContent="보기를 골라 주세요.";return;}box.className=p.value==="b"?"ok":"no";box.textContent=p.value==="b"?"맞아요. 문제가 먼저입니다.":"학습과 평가는 다음입니다.";}</script>
-</body></html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>인공지능 프로젝트</title>
+    <link rel="stylesheet" href="../textbook/styles.css" />
+  </head>
+  <body>
+    <main class="deck" aria-live="polite">
+      <section class="slide active">
+        <div class="slide-header">
+          <a class="home" href="../textbook/">← 교과서</a>
+          <p class="unit">IV</p>
+          <p class="page-ref">p.200</p>
+          <h1>인공지능 프로젝트</h1>
+          <p class="subtitle">오래 풀어야 하는 문제를 고르고, <strong>데이터와 모델</strong>로 한 걸음씩 갑니다.</p>
+        </div>
+        <div class="grid-2">
+          <article class="card"><span class="tag">01</span><h2>지속가능발전목표</h2><p>기후, 에너지, 폐기물처럼 사회가 함께 푸는 목표</p></article>
+          <article class="card green"><span class="tag">02</span><h2>프로젝트 과정</h2><p>문제 → 데이터 → 학습 → 평가 → 나누기</p></article>
+        </div>
+      </section>
+      <section class="slide">
+        <div class="slide-header">
+          <a class="home" href="../textbook/">← 교과서</a>
+          <p class="unit">01</p>
+          <p class="page-ref">p.200~203</p>
+          <h1>어떤 문제를 고를까</h1>
+        </div>
+        <div class="grid-3">
+          <article class="card"><h2>기후와 생물</h2><p>기온이 오르면 서식지가 줄어듭니다. 예측 모델로 위험을 볼 수 있습니다.</p></article>
+          <article class="card green"><h2>에너지</h2><p>재생 에너지 비율을 데이터로 비교하고 사용량을 예측해 뱅니다.</p></article>
+          <article class="card orange"><h2>폐기물</h2><p>하루 배출량이 늘면 수거와 재활용 계획을 다시 세워야 합니다.</p></article>
+        </div>
+      </section>
+      <section class="slide">
+        <div class="slide-header">
+          <a class="home" href="../textbook/">← 교과서</a>
+          <p class="unit">02</p>
+          <p class="page-ref">p.204~227</p>
+          <h1>프로젝트 5단계</h1>
+        </div>
+        <div class="steps">
+          <section><b>1</b><h2>문제 정의</h2><p>현재와 목표의 차이를 질문으로 적습니다.</p></section>
+          <section><b>2</b><h2>데이터</h2><p>정형/비정형을 고르고 결측치와 편향을 확인합니다.</p></section>
+          <section><b>3</b><h2>모델 학습</h2><p>회귀·분류·군집 중 문제에 맞는 유형을 고릅니다.</p></section>
+          <section><b>4</b><h2>평가</h2><p>테스트 데이터로 성능과 실패 사례를 봅니다.</p></section>
+          <section><b>5</b><h2>나누기</h2><p>한계와 다음 개선을 설명합니다.</p></section>
+        </div>
+        <div class="link-row"><a href="../ch2-1/">데이터 실습</a><a href="../ch2-2/">모델 실습</a></div>
+      </section>
+      <section class="slide">
+        <div class="slide-header">
+          <a class="home" href="../textbook/">← 교과서</a>
+          <p class="unit">확인</p>
+          <p class="page-ref">p.204</p>
+          <h1>확인 퀴즈</h1>
+        </div>
+        <div class="quiz">
+          <button type="button" data-choice="no" data-msg="모델을 만들기 전에 문제를 먼저 정합니다.">모델을 먼저 만들고, 나중에 문제를 찾아도 된다.</button>
+          <button type="button" data-choice="ok" data-msg="맞아요. 문제 정의 → 데이터 → 학습 → 평가가 기본입니다.">문제 정의 → 데이터 → 학습 → 평가 순서가 기본이다.</button>
+          <p class="quiz-result"></p>
+        </div>
+      </section>
+    </main>
+    <button class="nav-zone nav-prev" type="button" aria-label="이전"><span></span></button>
+    <button class="nav-zone nav-next" type="button" aria-label="다음"><span></span></button>
+    <div class="footer"><div class="dots"></div><p><span id="currentSlide">1</span> / <span id="totalSlides">1</span></p></div>
+    <script src="../textbook/script.js"></script>
+  </body>
+</html>
