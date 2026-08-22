@@ -34,6 +34,7 @@ jobs:
             --exclude='*_정답.ipynb' \
             --exclude='ai/index.html' \
             --exclude='ai/textbook/' \
+            --exclude='ai/lab/' \
             --exclude='ai/ch1-1/' \
             --exclude='ai/ch1-2/' \
             --exclude='ai/ch1-3/' \
