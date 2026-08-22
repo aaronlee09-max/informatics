@@ -33,6 +33,13 @@ jobs:
             --exclude='.github' \
             --exclude='*_정답.ipynb' \
             --exclude='ai/index.html' \
+            --exclude='ai/textbook/' \
+            --exclude='ai/ch1-1/' \
+            --exclude='ai/ch1-2/' \
+            --exclude='ai/ch1-3/' \
+            --exclude='ai/ch3-1/' \
+            --exclude='ai/ch3-2/' \
+            --exclude='ai/ch4-1/' \
             --exclude='informatics/index.html' \
             --exclude='informatics/ch2-3/index.html' \
             --exclude='informatics/ch2-3/*.ipynb' \
