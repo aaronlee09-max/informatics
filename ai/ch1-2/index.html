@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>02 인공지능과 탐색</title><link rel="stylesheet" href="../textbook/deck.css" /></head>
+<body>
+<a class="home" href="../">← 인공지능 기초</a>
+<main class="deck">
+<section class="slide active" data-slide="1"><div class="slide-header"><p class="unit">01</p><p class="page-ref">p.26</p><h1>인공지능과 탐색</h1><p class="subtitle">현재 상태에서 목표 상태로 가는 길을 상태 공간에서 찾는 과정</p></div>
+<div class="grid-3"><article class="card"><h2>현재 상태</h2><p>지금 놓인 퍼즐, 위치, 조건</p></article><article class="card"><h2>행동</h2><p>한 칸 옮기기처럼 바꾸 수 있는 일</p></article><article class="card"><h2>목표 상태</h2><p>맞춘 퍼즐, 도착 지점</p></article></div></section>
+<section class="slide" data-slide="2"><div class="slide-header"><p class="unit">02</p><p class="page-ref">p.30</p><h1>맹목적 탐색</h1><p class="subtitle">남은 거리를 추정하지 않고 정해진 순서만 따락갑니다.</p></div>
+<div class="grid-2"><article class="card"><h2>너비 우선</h2><p>가까운 칸부터 한 층씩 살폭봅니다.</p></article><article class="card"><h2>깊이 우선</h2><p>한 길을 끝까지 들어간 뒤 되돌아 다른 길을 봅니다.</p></article></div></section>
+<section class="slide" data-slide="3"><div class="slide-header"><p class="unit">03</p><p class="page-ref">p.30</p><h1>탐색 순서 눌러 보기</h1><p class="subtitle">S에서 G까지 너비 우선 순서</p></div>
+<div class="card act"><p>그래프: S — A — G , S — B</p><div class="choice-grid" id="bfsChoices"><button class="choice" data-ok="1">S → A, B → G</button><button class="choice" data-ok="0">S → A → G만 간다</button><button class="choice" data-ok="0">G부터 거꾸로만</button><button class="choice" data-ok="0">무작위가 너비 우선</button></div><p id="bfsMsg"></p></div></section>
+<section class="slide" data-slide="4"><div class="slide-header"><p class="unit">04</p><p class="page-ref">p.34</p><h1>지능적 탐색</h1></div>
+<div class="grid-2"><article class="card"><h2>휴리스틱 h(n)</h2><p>목표까지 남을 것 같은 비용을 어림합니다.</p></article><article class="card"><h2>A*</h2><p><strong>f(n) = g(n) + h(n)</strong></p></article></div></section>
+<section class="slide" data-slide="5"><div class="slide-header"><p class="unit">05</p><p class="page-ref">p.34</p><h1>휴리스틱 계산</h1><p class="subtitle">목표와 다른 숫자 타일 개수. 빈칸은 안 섹니다.</p></div>
+<div class="grid-2"><article class="card"><h2>지금</h2><p>2 8 3<br>1 6 4<br>7 5 □</p></article><article class="card"><h2>목표</h2><p>1 2 3<br>8 □ 4<br>7 6 5</p><div class="choice-grid" id="hChoices"><button class="choice" data-ok="0">2</button><button class="choice" data-ok="1">5</button><button class="choice" data-ok="0">8</button><button class="choice" data-ok="0">9</button></div><p id="hMsg"></p></article></div></section>
+<section class="slide" data-slide="6"><div class="slide-header"><p class="unit">06</p><p class="page-ref">p.38</p><h1>어디에 쓰나</h1></div>
+<div class="grid-3"><article class="card"><h2>지도</h2><p>후보 경로</p></article><article class="card"><h2>퍼즐</h2><p>한 수씩 옮기기</p></article><article class="card"><h2>계획</h2><p>행동 순서 탐색</p></article></div></section>
+</main>
+<button class="nav-zone nav-prev" type="button" aria-label="이전"></button>
+<button class="nav-zone nav-next" type="button" aria-label="다음"></button>
+<div class="footer"><div class="dots"></div><p><span id="currentSlide">1</span> / <span id="totalSlides">1</span></p></div>
+<script src="../textbook/deck.js"></script>
+<script>function bindChoices(id,msgId){document.querySelectorAll("#"+id+" .choice").forEach(function(btn){btn.addEventListener("click",function(){document.querySelectorAll("#"+id+" .choice").forEach(function(b){b.classList.remove("right","wrong")});var ok=btn.dataset.ok==="1";btn.classList.add(ok?"right":"wrong");var box=document.getElementById(msgId);box.className=ok?"ok":"no";box.textContent=ok?"맞아요.":"다른 보기를 다시 눌러 보세요.";});});}bindChoices("bfsChoices","bfsMsg");bindChoices("hChoices","hMsg");</script>
+</body></html>

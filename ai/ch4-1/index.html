@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>인공지능 프로젝트</title><link rel="stylesheet" href="../textbook/deck.css" /></head>
+<body>
+<a class="home" href="../">← 인공지능 기초</a>
+<main class="deck">
+<section class="slide active"><div class="slide-header"><p class="unit">01</p><p class="page-ref">p.200</p><h1>지속가능발전목표와 인공지능</h1><p class="subtitle">먼저 문제를 고르고, 그다음 모델을 고릅니다.</p></div>
+<div class="grid-3"><article class="card"><h2>기후</h2><p>배출·기온 예측</p></article><article class="card"><h2>폐기물</h2><p>분류와 발생량 예측</p></article><article class="card"><h2>에너지</h2><p>낭비 줄이기</p></article></div></section>
+<section class="slide"><div class="slide-header"><p class="unit">02</p><p class="page-ref">p.204</p><h1>프로젝트 순서</h1></div>
+<div class="node-map"><div class="node">문제 정의</div><span class="arrow">→</span><div class="node">데이터</div><span class="arrow">→</span><div class="node">학습</div><span class="arrow">→</span><div class="node">평가</div><span class="arrow">→</span><div class="node">개선</div></div>
+<article class="card"><p>II단원 실습을 이 순서에 다시 올려 쓰면 프로젝트가 됩니다.</p></article></section>
+<section class="slide"><div class="slide-header"><p class="unit">03</p><p class="page-ref">p.204</p><h1>우리 팀 점검표</h1></div>
+<article class="card check-list">
+<label><input type="checkbox" class="step" /> 문제를 한 문장 질문으로 적었다</label>
+<label><input type="checkbox" class="step" /> 정형/비정형을 정했다</label>
+<label><input type="checkbox" class="step" /> 회귀/분류/군집을 골랐다</label>
+<label><input type="checkbox" class="step" /> 훈련/테스트를 나누었다</label>
+<label><input type="checkbox" class="step" /> 성능과 한계를 글로 남겼다</label>
+<p id="progress" class="ok"></p></article></section>
+<section class="slide"><div class="slide-header"><p class="unit">04</p><h1>확인하기</h1></div>
+<div class="card quiz"><p>프로젝트를 시작할 때 먼저 할 일은?</p>
+<label><input type="radio" name="q1" value="a" /> 모델부터 학습</label>
+<label><input type="radio" name="q1" value="b" /> 문제를 질문으로 정의</label>
+<label><input type="radio" name="q1" value="c" /> 평가 생략</label>
+<button type="button" onclick="checkQ()">정답 확인</button><p id="r1"></p></div></section>
+</main>
+<button class="nav-zone nav-prev" type="button"></button><button class="nav-zone nav-next" type="button"></button>
+<div class="footer"><div class="dots"></div><p><span id="currentSlide">1</span> / <span id="totalSlides">1</span></p></div>
+<script src="../textbook/deck.js"></script>
+<script>var boxes=Array.from(document.querySelectorAll(".step"));var saved=JSON.parse(localStorage.getItem("ai-project-check")||"[]");boxes.forEach(function(b,i){b.checked=!!saved[i]});function render(){var n=boxes.filter(function(b){return b.checked}).length;document.getElementById("progress").textContent=n+" / "+boxes.length+" 완료";localStorage.setItem("ai-project-check",JSON.stringify(boxes.map(function(b){return b.checked})));}boxes.forEach(function(b){b.addEventListener("change",render)});render();function checkQ(){var p=document.querySelector('input[name="q1"]:checked');var box=document.getElementById("r1");if(!p){box.className="no";box.textContent="보기를 골라 주세요.";return;}box.className=p.value==="b"?"ok":"no";box.textContent=p.value==="b"?"맞아요. 문제가 먼저입니다.":"학습과 평가는 다음입니다.";}</script>
+</body></html>

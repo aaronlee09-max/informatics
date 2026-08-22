@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>03 지식의 표현과 추론</title><link rel="stylesheet" href="../textbook/deck.css" /></head>
+<body>
+<a class="home" href="../">← 인공지능 기초</a>
+<main class="deck">
+<section class="slide active"><div class="slide-header"><p class="unit">01</p><p class="page-ref">p.42</p><h1>지식의 표현과 추론</h1><p class="subtitle">아는 것을 기호로 적고, 규칙으로 새 사실을 이끄어 냅니다.</p></div>
+<div class="grid-2"><article class="card"><h2>표현</h2><p>사실과 규칙을 문장으로 적습니다.</p></article><article class="card"><h2>추론</h2><p>이미 있는 문장에서 결론을 꺼냅니다.</p></article></div></section>
+<section class="slide"><div class="slide-header"><p class="unit">02</p><p class="page-ref">p.43</p><h1>규칙으로 결론 내기</h1></div>
+<div class="node-map"><div class="node">규칙<br>비가 오면 땅이 젊는다</div><span class="arrow">+</span><div class="node">사실<br>지금 비가 온다</div><span class="arrow">→</span><div class="node active">결론<br>땅이 젊는다</div></div></section>
+<section class="slide"><div class="slide-header"><p class="unit">03</p><p class="page-ref">p.43</p><h1>앞으로 / 뒤로</h1></div>
+<div class="grid-2"><article class="card"><h2>앞으로</h2><p>지금 사실에서 새 사실을 쌓습니다.</p></article><article class="card"><h2>뒤로</h2><p>확인하고 싶은 결론부터 거꾸로 물어 갑니다.</p></article></div></section>
+<section class="slide"><div class="slide-header"><p class="unit">04</p><h1>탐색과 추론</h1></div>
+<table class="compare"><thead><tr><th></th><th>탐색</th><th>추론</th></tr></thead><tbody><tr><th>질문</th><td>어떤 길로 갈까?</td><td>이 사실이 맞을까?</td></tr><tr><th>재료</th><td>상태와 행동</td><td>사실과 규칙</td></tr></tbody></table></section>
+<section class="slide"><div class="slide-header"><p class="unit">05</p><h1>확인하기</h1></div>
+<div class="card quiz"><p>규칙 “학생이면 도서관 카드를 가진다” + 사실 “민수는 학생이다”</p>
+<label><input type="radio" name="q1" value="a" /> 민수는 도서관 카드를 가진다</label>
+<label><input type="radio" name="q1" value="b" /> 도서관이 문을 닫는다</label>
+<label><input type="radio" name="q1" value="c" /> 민수는 학생이 아니다</label>
+<button type="button" onclick="checkQ()">정답 확인</button><p id="r1"></p></div></section>
+</main>
+<button class="nav-zone nav-prev" type="button"></button><button class="nav-zone nav-next" type="button"></button>
+<div class="footer"><div class="dots"></div><p><span id="currentSlide">1</span> / <span id="totalSlides">1</span></p></div>
+<script src="../textbook/deck.js"></script>
+<script>function checkQ(){var p=document.querySelector('input[name="q1"]:checked');var box=document.getElementById("r1");if(!p){box.className="no";box.textContent="보기를 골라 주세요.";return;}box.className=p.value==="a"?"ok":"no";box.textContent=p.value==="a"?"맞아요.":"규칙에 사실만 대입해 보세요.";}</script>
+</body></html>

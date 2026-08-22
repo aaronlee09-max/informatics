@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>02 인공지능 윤리</title><link rel="stylesheet" href="../textbook/deck.css" /></head>
+<body>
+<a class="home" href="../">← 인공지능 기초</a>
+<main class="deck">
+<section class="slide active"><div class="slide-header"><p class="unit">01</p><p class="page-ref">p.178</p><h1>인공지능 윤리</h1></div>
+<div class="grid-4"><article class="card"><h2>공정성</h2><p>특정 집단만 불리하지 않기</p></article><article class="card"><h2>투명성</h2><p>왜 그렇게 판단했는지 설명</p></article><article class="card"><h2>안전성</h2><p>해킹·오작동 피해 막기</p></article><article class="card"><h2>책무성</h2><p>누가 책임지는지 정하기</p></article></div></section>
+<section class="slide"><div class="slide-header"><p class="unit">02</p><p class="page-ref">p.179</p><h1>쟁점 짝 맞추기</h1></div>
+<div class="grid-2"><article class="card"><p>합격 이유를 아무도 설명하지 못한다.</p><div class="choice-grid" id="c1"><button class="choice" data-ok="1">투명성</button><button class="choice" data-ok="0">안전성</button></div></article><article class="card"><p>한 지역 사례만 많아 다른 지역 예측이 자주 틀린다.</p><div class="choice-grid" id="c2"><button class="choice" data-ok="0">책무성</button><button class="choice" data-ok="1">공정성</button></div></article></div></section>
+<section class="slide"><div class="slide-header"><p class="unit">03</p><p class="page-ref">p.188</p><h1>공존을 위한 역할</h1></div>
+<div class="grid-3"><article class="card"><h2>개발자</h2><p>한계를 적고 위험한 용도는 막기</p></article><article class="card"><h2>사용자</h2><p>중요한 결정은 다시 확인</p></article><article class="card"><h2>운영자</h2><p>누가 피해를 받는지 감시</p></article></div></section>
+<section class="slide"><div class="slide-header"><p class="unit">04</p><h1>확인하기</h1></div>
+<div class="card quiz"><p>자율주행차 해킹 우려는?</p>
+<label><input type="radio" name="q1" value="a" /> 공정성</label>
+<label><input type="radio" name="q1" value="b" /> 안전성</label>
+<label><input type="radio" name="q1" value="c" /> 재미</label>
+<button type="button" onclick="checkQ()">정답 확인</button><p id="r1"></p></div></section>
+</main>
+<button class="nav-zone nav-prev" type="button"></button><button class="nav-zone nav-next" type="button"></button>
+<div class="footer"><div class="dots"></div><p><span id="currentSlide">1</span> / <span id="totalSlides">1</span></p></div>
+<script src="../textbook/deck.js"></script>
+<script>function bind(id){document.querySelectorAll("#"+id+" .choice").forEach(function(btn){btn.addEventListener("click",function(){document.querySelectorAll("#"+id+" .choice").forEach(function(b){b.classList.remove("right","wrong")});btn.classList.add(btn.dataset.ok==="1"?"right":"wrong");});});}bind("c1");bind("c2");function checkQ(){var p=document.querySelector('input[name="q1"]:checked');var box=document.getElementById("r1");if(!p){box.className="no";box.textContent="보기를 골라 주세요.";return;}box.className=p.value==="b"?"ok":"no";box.textContent=p.value==="b"?"맞아요.":"다시 보면 좋아요.";}</script>
+</body></html>
