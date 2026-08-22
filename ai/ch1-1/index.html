@@ -3,106 +3,73 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>01 인공지능의 원리</title>
-    <link rel="stylesheet" href="../textbook/deck.css" />
+    <title>인공지능의 원리</title>
+    <link rel="stylesheet" href="../textbook/styles.css" />
   </head>
   <body>
-    <a class="home" href="../">← 인공지능 기초</a>
     <main class="deck" aria-live="polite">
-      <section class="slide active" data-slide="1">
+      <section class="slide active">
         <div class="slide-header">
-          <p class="unit">01</p><p class="page-ref">p.14</p>
+          <a class="home" href="../textbook/">← 교과서</a>
+          <p class="unit">01</p>
+          <p class="page-ref">p.14</p>
           <h1>인공지능의 원리</h1>
-          <p class="subtitle">실생활 문제를 인공지능의 눈으로 보고, 탐색과 추론으로 풀어 보기 위한 출발점</p>
+          <p class="subtitle">지능, 인공지능, 인공지능 시스템을 구분합니다.</p>
         </div>
         <div class="grid-3">
-          <article class="card"><span class="tag">1</span><h2>지능의 이해</h2><p>사람이 상황을 알아채고, 기억을 꺼내 판단하고, 행동하는 과정을 나눔니다.</p></article>
-          <article class="card"><span class="tag">2</span><h2>인공지능의 이해</h2><p>기계가 그 판단의 일부를 흉내 내는 방식과 한계를 구분합니다.</p></article>
-          <article class="card"><span class="tag">3</span><h2>시스템으로 보기</h2><p>센서, 판단, 행동이 한 덩어리로 움직이는 지능 에이전트를 봅니다.</p></article>
+          <article class="card"><span class="tag">1</span><h2>지능의 이해</h2><p>상황을 이해하고 목표에 맞게 판단하는 능력</p></article>
+          <article class="card green"><span class="tag">2</span><h2>인공지능의 이해</h2><p>그 판단을 기계가 데이터와 규칙으로 수행하는 기술</p></article>
+          <article class="card orange"><span class="tag">3</span><h2>시스템</h2><p>센서·소프트웨어·행동이 한 덩어리로 움직이는 구조</p></article>
         </div>
       </section>
-      <section class="slide" data-slide="2">
+      <section class="slide">
         <div class="slide-header">
-          <p class="unit">02</p><p class="page-ref">p.14</p>
-          <h1>지능을 과정으로 나누기</h1>
-          <p class="subtitle">인식 → 이해 → 판단 → 행동</p>
-        </div>
-        <div class="node-map">
-          <div class="node">상황 인식</div><span class="arrow">→</span>
-          <div class="node">이해</div><span class="arrow">→</span>
-          <div class="node">판단</div><span class="arrow">→</span>
-          <div class="node">행동</div>
+          <a class="home" href="../textbook/">← 교과서</a>
+          <p class="unit">01</p>
+          <p class="page-ref">p.14~16</p>
+          <h1>사람과 시스템의 판단</h1>
+          <p class="subtitle">같은 교차로에서도 입력과 결정 방식이 다릅니다.</p>
         </div>
         <div class="grid-2">
-          <article class="card"><h2>사람</h2><p>길을 건너는 사람, 신호, 공사 표지까지 한번에 보고 결정합니다.</p></article>
-          <article class="card"><h2>기계</h2><p>카메라·GPS·지도 데이터를 받아 다음 동작을 고릅니다.</p></article>
+          <article class="card"><h2>사람</h2><p>신호, 자전거, 옆 차를 한눈에 보고 경험으로 “지금은 기다리자”고 정합니다.</p></article>
+          <article class="card green"><h2>인공지능 시스템</h2><p>지도·GPS·센서 값을 받아 안전과 시간 목표에 맞게 직진·대기·우회를 고릅니다.</p></article>
         </div>
       </section>
-      <section class="slide" data-slide="3">
+      <section class="slide">
         <div class="slide-header">
-          <p class="unit">03</p><p class="page-ref">p.16</p>
-          <h1>인공지능이란</h1>
-          <p class="subtitle">목표를 향해 정보를 처리하고 판단하거나 학습하는 시스템</p>
-        </div>
-        <div class="grid-3">
-          <article class="card"><h2>탐색</h2><p>여러 길 중에서 목표에 가까운 다음 상태를 찾습니다.</p></article>
-          <article class="card"><h2>추론</h2><p>사실과 규칙으로 새 결론을 이끄어 냅니다.</p></article>
-          <article class="card"><h2>학습</h2><p>데이터에서 패턴을 찾아 다음 예측을 더 잘하게 만듭니다.</p></article>
-        </div>
-      </section>
-      <section class="slide" data-slide="4">
-        <div class="slide-header">
-          <p class="unit">04</p><p class="page-ref">p.22</p>
-          <h1>일반 소프트웨어와 인공지능 소프트웨어</h1>
+          <a class="home" href="../textbook/">← 교과서</a>
+          <p class="unit">01</p>
+          <p class="page-ref">p.16~22</p>
+          <h1>일반 소프트웨어와 인공지능</h1>
+          <p class="subtitle">인공지능은 별세계가 아니라 <strong>소프트웨어 안의 지능 기능</strong>입니다.</p>
         </div>
         <table class="compare">
           <thead><tr><th></th><th>일반 소프트웨어</th><th>인공지능 소프트웨어</th></tr></thead>
           <tbody>
-            <tr><th>하는 일</th><td>저장, 계산, 정해진 반복과 선택</td><td>판단, 추론, 학습, 예측</td></tr>
-            <tr><th>잘 맞는 문제</th><td>규칙을 분명히 적을 수 있는 일</td><td>규칙을 미리 다 쓰기 어려운 일</td></tr>
-            <tr><th>예</th><td>평균 점수 계산, 표 정렬</td><td>추천, 음성 인식</td></tr>
+            <tr><th>하는 일</th><td>저장, 계산, 정해진 선택</td><td>판단, 추론, 학습, 예측</td></tr>
+            <tr><th>규칙</th><td>사람이 규칙을 직접 작성</td><td>데이터에서 패턴을 찾아 모델 생성</td></tr>
+            <tr><th>예</th><td>평균 계산, 재고 합계</td><td>추천, 음성 인식, 보조 진단</td></tr>
           </tbody>
         </table>
+        <p class="note">지능 에이전트는 스스로 행동하지만 실수도 하므로, 사람이 점검할 자리가 필요합니다.</p>
       </section>
-      <section class="slide" data-slide="5">
+      <section class="slide">
         <div class="slide-header">
-          <p class="unit">05</p><p class="page-ref">p.22</p>
-          <h1>지능 에이전트</h1>
-          <p class="subtitle">환경을 감지하고 목표를 향해 스스로 행동하는 시스템</p>
+          <a class="home" href="../textbook/">← 교과서</a>
+          <p class="unit">확인</p>
+          <p class="page-ref">p.14~22</p>
+          <h1>확인 퀴즈</h1>
         </div>
-        <div class="grid-3">
-          <article class="card"><h2>센서</h2><p>카메라, 마이크, GPS</p></article>
-          <article class="card"><h2>판단</h2><p>목표와의 차이를 보고 다음 행동을 고른다</p></article>
-          <article class="card"><h2>행동</h2><p>핸들, 스피커, 화면 추천</p></article>
-        </div>
-      </section>
-      <section class="slide" data-slide="6">
-        <div class="slide-header">
-          <p class="unit">06</p><p class="page-ref">p.23</p>
-          <h1>확인하기</h1>
-        </div>
-        <div class="card quiz">
-          <p>지능 에이전트를 가장 잘 말한 것은?</p>
-          <label><input type="radio" name="q1" value="a" /> 계산만 빠르면 에이전트이다.</label>
-          <label><input type="radio" name="q1" value="b" /> 환경을 감지하고 목표를 향해 행동한다.</label>
-          <label><input type="radio" name="q1" value="c" /> 사람이 매번 버튼을 눌러야 만 움직인다.</label>
-          <button type="button" onclick="checkQ()">정답 확인</button>
-          <p id="r1"></p>
+        <div class="quiz">
+          <button type="button" data-choice="no" data-msg="둘은 규칙과 학습 방식이 다릅니다.">일반 소프트웨어와 인공지능 소프트웨어는 항상 같다.</button>
+          <button type="button" data-choice="ok" data-msg="맞아요. 에이전트는 목표를 보고 스스로 행동합니다.">지능 에이전트는 센서 정보를 보고 목표에 맞게 행동한다.</button>
+          <p class="quiz-result"></p>
         </div>
       </section>
     </main>
-    <button class="nav-zone nav-prev" type="button" aria-label="이전 슬라이드"></button>
-    <button class="nav-zone nav-next" type="button" aria-label="다음 슬라이드"></button>
+    <button class="nav-zone nav-prev" type="button" aria-label="이전"><span></span></button>
+    <button class="nav-zone nav-next" type="button" aria-label="다음"><span></span></button>
     <div class="footer"><div class="dots"></div><p><span id="currentSlide">1</span> / <span id="totalSlides">1</span></p></div>
-    <script src="../textbook/deck.js"></script>
-    <script>
-      function checkQ() {
-        const p = document.querySelector('input[name="q1"]:checked');
-        const box = document.getElementById("r1");
-        if (!p) { box.className = "no"; box.textContent = "보기를 골라 주세요."; return; }
-        if (p.value === "b") { box.className = "ok"; box.textContent = "맞아요. 감지와 목표 지향 행동이 핵심입니다."; }
-        else { box.className = "no"; box.textContent = "정답은 두 번째입니다."; }
-      }
-    </script>
+    <script src="../textbook/script.js"></script>
   </body>
 </html>
