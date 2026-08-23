@@ -1,0 +1,43 @@
+{
+  "content": [
+    {
+      "content": null,
+      "created": "2026-08-23T22:55:38.076059Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-08-23T22:55:36.175519Z",
+      "mimetype": null,
+      "name": "\ub124\uc774\ubc84_VIBE_data_\ubd84\uc11d_\ubc30\ud3ec\uc6a9.ipynb",
+      "path": "informatics/ch2-3/\ub124\uc774\ubc84_VIBE_data_\ubd84\uc11d_\ubc30\ud3ec\uc6a9.ipynb",
+      "size": 2154,
+      "type": "notebook",
+      "writable": true
+    },
+    {
+      "content": null,
+      "created": "2026-08-23T22:55:38.075769Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-08-23T22:55:36.178034Z",
+      "mimetype": "text/csv",
+      "name": "navermusic_genre.csv",
+      "path": "informatics/ch2-3/navermusic_genre.csv",
+      "size": 843,
+      "type": "file",
+      "writable": true
+    }
+  ],
+  "created": "2026-08-23T22:55:38.076059Z",
+  "format": "json",
+  "hash": null,
+  "hash_algorithm": null,
+  "last_modified": "2026-08-23T22:55:38.076059Z",
+  "mimetype": null,
+  "name": "ch2-3",
+  "path": "informatics/ch2-3",
+  "size": null,
+  "type": "directory",
+  "writable": true
+}
