@@ -11,7 +11,7 @@ on:
       - '.github/workflows/build-jupyterlite.yml'
 
 permissions:
-  contents: write
+  contents: write 
 
 jobs:
   build:
