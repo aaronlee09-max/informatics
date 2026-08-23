@@ -39,18 +39,20 @@ jobs:
                    /tmp/jlite-contents/informatics/ch3-3 \
                    /tmp/jlite-contents/informatics/ch3-4
 
-          find ai/ch2-1 -maxdepth 1 -name '*.ipynb' ! -name '*정답*' -exec cp {} /tmp/jlite-contents/ch2-1/ \;
+          # AI: student + teacher
+          find ai/ch2-1 -maxdepth 1 -name '*.ipynb' -exec cp {} /tmp/jlite-contents/ch2-1/ \;
           find ai/ch2-1 -maxdepth 1 -name '*.csv' -exec cp {} /tmp/jlite-contents/ch2-1/ \;
           for sub in 2 3 4; do
             if [ -d "ai/ch2-2/$sub" ]; then
-              find "ai/ch2-2/$sub" -maxdepth 1 -name '*.ipynb' ! -name '*정답*' -exec cp {} "/tmp/jlite-contents/ch2-2/$sub/" \;
+              find "ai/ch2-2/$sub" -maxdepth 1 -name '*.ipynb' -exec cp {} "/tmp/jlite-contents/ch2-2/$sub/" \;
               find "ai/ch2-2/$sub" -maxdepth 1 -name '*.csv' -exec cp {} "/tmp/jlite-contents/ch2-2/$sub/" \;
             fi
           done
 
+          # Informatics: student + teacher answer notebooks
           for ch in ch2-3 ch3-3 ch3-4; do
             if [ -d "informatics/$ch" ]; then
-              find "informatics/$ch" -maxdepth 1 -name '*.ipynb' ! -name '*정답*' -exec cp {} "/tmp/jlite-contents/informatics/$ch/" \;
+              find "informatics/$ch" -maxdepth 1 -name '*.ipynb' -exec cp {} "/tmp/jlite-contents/informatics/$ch/" \;
               find "informatics/$ch" -maxdepth 1 -name '*.csv' -exec cp {} "/tmp/jlite-contents/informatics/$ch/" \;
             fi
           done
@@ -84,6 +86,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes"
           else
-            git commit -m "Build JupyterLite (AI + informatics notebooks)"
+            git commit -m "Build JupyterLite (student + teacher notebooks)"
             git push origin HEAD:main
           fi
