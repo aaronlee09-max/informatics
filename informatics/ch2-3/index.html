@@ -1,1 +1,79 @@
-PLACEHOLDER
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>빅데이터 개념과 분석</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .back-link { display:inline-block; margin: 18px 24px 0; color:#2563eb; font-weight:800; text-decoration:none; }
+      .lab-box { width:min(1040px, calc(100% - 48px)); margin: 12px auto 0; padding: 16px 18px 10px; border:2px solid #d7e0ea; border-radius:12px; background:#fff; }
+      .lab-box h2 { margin:0 0 8px; font-size:20px; }
+      .lab-row { display:flex; justify-content:space-between; gap:12px; align-items:center; padding:10px 0; border-top:1px solid #e5eaf0; flex-wrap:wrap; }
+      .downloads a { display:inline-flex; margin-left:6px; padding:7px 10px; border:1px solid #d8ccf8; border-radius:8px; text-decoration:none; font-size:13px; font-weight:800; color:#6d28d9; }
+      .downloads a.answer { border-color:#fcd34d; color:#b45309; }
+      .downloads a.csv { border-color:#b9e1d0; color:#047857; }
+      .downloads a.run { border-color:#93c5fd; color:#1d4ed8; background:#eff6ff; }
+      .downloads a.site { border-color:#6ee7b7; color:#047857; background:#ecfdf5; }
+    </style>
+  </head>
+  <body>
+    <a class="back-link" href="../">← 정보 단원 목록</a>
+    <section class="lab-box" aria-label="2-3 실습 자료">
+      <h2>수업 실습 노트북</h2>
+      <div class="lab-row">
+        <strong>전 세계 행복 지수 분석</strong>
+        <div class="downloads"><a class="run" href="https://colab.research.google.com/github/aaronlee09-max/informatics/blob/main/informatics/ch2-3/전_세계_행복_지수_배포용.ipynb" target="_blank" rel="noopener">Colab</a><a class="site" href="../../ai/jlite/notebooks/index.html?path=informatics/ch2-3/전_세계_행복_지수_배포용.ipynb">사이트실행</a>
+          <a href="./전_세계_행복_지수_배포용.ipynb" download>노트북</a>
+          <a class="answer" href="./전_세계_행복_지수_배포용_정답.ipynb" download>정답</a>
+          <a class="csv" href="./world_happiness_report_2021.csv" download>CSV</a>
+        </div>
+      </div>
+      <div class="lab-row">
+        <strong>네이버 VIBE 데이터 분석</strong>
+        <div class="downloads"><a class="run" href="https://colab.research.google.com/github/aaronlee09-max/informatics/blob/main/informatics/ch2-3/네이버_VIBE_data_분석_배포용.ipynb" target="_blank" rel="noopener">Colab</a><a class="site" href="../../ai/jlite/notebooks/index.html?path=informatics/ch2-3/네이버_VIBE_data_분석_배포용.ipynb">사이트실행</a>
+          <a href="./네이버_VIBE_data_분석_배포용.ipynb" download>노트북</a>
+          <a class="answer" href="./네이버_VIBE_data_분석_배포용_정답.ipynb" download>정답</a>
+          <a class="csv" href="./navermusic_age.csv" download>CSV</a>
+        </div>
+      </div>
+      <div class="lab-row">
+        <strong>롤러코스터 데이터 분석</strong>
+        <div class="downloads"><a class="run" href="https://colab.research.google.com/github/aaronlee09-max/informatics/blob/main/informatics/ch2-3/데이터분석_5차시_롤러코스터_데이터_분석.ipynb" target="_blank" rel="noopener">Colab</a><a class="site" href="../../ai/jlite/notebooks/index.html?path=informatics/ch2-3/데이터분석_5차시_롤러코스터_데이터_분석.ipynb">사이트실행</a>
+          <a href="./데이터분석_5차시_롤러코스터_데이터_분석.ipynb" download>노트북</a>
+          <a class="answer" href="./데이터분석_5차시_롤러코스터_데이터_분석_정답.ipynb" download>정답</a>
+        </div>
+      </div>
+    </section>
+    <p style="text-align:center;color:#5c6b7d;padding:20px">슬라이드 본문은 아래 덱에서 이어집니다. 키보드 ← → 로 이동</p>
+    <main class="deck" aria-live="polite" id="deckRoot">
+      <!-- deck slides loaded from original; keep navigation -->
+      <section class="slide active" data-slide="1">
+        <div class="slide-header">
+          <p class="unit">01</p>
+          <p class="page-ref">p.90</p>
+          <h1>빅데이터</h1>
+          <p class="subtitle">규모·속도·다양성이 큰 데이터를 <strong>수집·분석</strong>해 가치를 찾는다.</p>
+        </div>
+        <div class="before-after">
+          <article>
+            <header><span>특징</span><h2>3V</h2></header>
+            <p>Volume · Velocity · Variety</p>
+          </article>
+          <div class="versus">→</div>
+          <article>
+            <header><span>활용</span><h2>분석</h2></header>
+            <p>패턴을 찾아 의사결정에 활용한다.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+    <button class="nav-zone nav-prev" type="button" aria-label="이전"><span></span></button>
+    <button class="nav-zone nav-next" type="button" aria-label="다음"><span></span></button>
+    <div class="footer"><div class="dots"></div><p><span id="currentSlide">1</span> / <span id="totalSlides">1</span></p></div>
+    <script src="script.js"></script>
+  </body>
+</html>
