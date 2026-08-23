@@ -8,10 +8,12 @@ on:
       - 'ai/ch2-2/**/*.ipynb'
       - 'ai/ch2-1/**/*.csv'
       - 'ai/ch2-2/**/*.csv'
+      - 'informatics/**/*.ipynb'
+      - 'informatics/**/*.csv'
       - '.github/workflows/build-jupyterlite.yml'
 
 permissions:
-  contents: write 
+  contents: write
 
 jobs:
   build:
@@ -29,7 +31,14 @@ jobs:
 
       - name: Stage notebook contents
         run: |
-          mkdir -p /tmp/jlite-contents/ch2-1 /tmp/jlite-contents/ch2-2/2 /tmp/jlite-contents/ch2-2/3 /tmp/jlite-contents/ch2-2/4
+          mkdir -p /tmp/jlite-contents/ch2-1 \
+                   /tmp/jlite-contents/ch2-2/2 \
+                   /tmp/jlite-contents/ch2-2/3 \
+                   /tmp/jlite-contents/ch2-2/4 \
+                   /tmp/jlite-contents/informatics/ch2-3 \
+                   /tmp/jlite-contents/informatics/ch3-3 \
+                   /tmp/jlite-contents/informatics/ch3-4
+
           find ai/ch2-1 -maxdepth 1 -name '*.ipynb' ! -name '*정답*' -exec cp {} /tmp/jlite-contents/ch2-1/ \;
           find ai/ch2-1 -maxdepth 1 -name '*.csv' -exec cp {} /tmp/jlite-contents/ch2-1/ \;
           for sub in 2 3 4; do
@@ -38,6 +47,15 @@ jobs:
               find "ai/ch2-2/$sub" -maxdepth 1 -name '*.csv' -exec cp {} "/tmp/jlite-contents/ch2-2/$sub/" \;
             fi
           done
+
+          for ch in ch2-3 ch3-3 ch3-4; do
+            if [ -d "informatics/$ch" ]; then
+              find "informatics/$ch" -maxdepth 1 -name '*.ipynb' ! -name '*정답*' -exec cp {} "/tmp/jlite-contents/informatics/$ch/" \;
+              find "informatics/$ch" -maxdepth 1 -name '*.csv' -exec cp {} "/tmp/jlite-contents/informatics/$ch/" \;
+            fi
+          done
+
+          echo '--- staged ---'
           find /tmp/jlite-contents -type f | sort
 
       - name: Build JupyterLite
@@ -46,7 +64,7 @@ jobs:
           {
             "jupyter-lite-schema-version": 0,
             "jupyter-config-data": {
-              "appName": "AI 실습 JupyterLite",
+              "appName": "정보·AI 실습 JupyterLite",
               "collaborative": false
             }
           }
@@ -66,6 +84,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes"
           else
-            git commit -m "Build JupyterLite for on-site notebook execution"
+            git commit -m "Build JupyterLite (AI + informatics notebooks)"
             git push origin HEAD:main
           fi
