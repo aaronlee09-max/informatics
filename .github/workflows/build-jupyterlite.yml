@@ -39,7 +39,6 @@ jobs:
                    /tmp/jlite-contents/informatics/ch3-3 \
                    /tmp/jlite-contents/informatics/ch3-4
 
-          # AI: student + teacher
           find ai/ch2-1 -maxdepth 1 -name '*.ipynb' -exec cp {} /tmp/jlite-contents/ch2-1/ \;
           find ai/ch2-1 -maxdepth 1 -name '*.csv' -exec cp {} /tmp/jlite-contents/ch2-1/ \;
           for sub in 2 3 4; do
@@ -49,7 +48,6 @@ jobs:
             fi
           done
 
-          # Informatics: student + teacher answer notebooks
           for ch in ch2-3 ch3-3 ch3-4; do
             if [ -d "informatics/$ch" ]; then
               find "informatics/$ch" -maxdepth 1 -name '*.ipynb' -exec cp {} "/tmp/jlite-contents/informatics/$ch/" \;
@@ -60,11 +58,33 @@ jobs:
           echo '--- staged ---'
           find /tmp/jlite-contents -type f | sort
 
-      - name: Patch notebooks for JupyterLite (piplite)
+      - name: Neutralize broken pip subprocess cells
         run: |
           python3 << 'PY'
           import json, pathlib
-          NEW = '''# 실습에 필요한 라이브러리 준비 (Colab + JupyterLite 호환)\nimport sys\n\n_packages = [\n    ("pandas", "pandas"),\n    ("numpy", "numpy"),\n    ("matplotlib", "matplotlib"),\n    ("seaborn", "seaborn"),\n    ("sklearn", "scikit-learn"),\n]\n\nif sys.platform == "emscripten":\n    import piplite\n    await piplite.install([pip_name for _, pip_name in _packages])\nelse:\n    import importlib, subprocess\n    for module_name, pip_name in _packages:\n        try:\n            importlib.import_module(module_name)\n        except ModuleNotFoundError:\n            subprocess.run([sys.executable, "-m", "pip", "install", "-q", pip_name], check=False)\n\nprint("라이브러리 준비 완료")\n'''
+          # Colab용 subprocess pip은 브라우저에서 실패하므로,
+          # 패키지는 커널 preload로 이미 들어가 있다고 가정하고
+          # 설치 셀은 import 확인만 하도록 바꿈.
+          NEW = '''# 라이브러리는 JupyterLite 커널에 미리 포함되어 있습니다.
+# (Colab에서는 아래 설치 코드가 실행됩니다.)
+import sys
+
+if sys.platform != "emscripten":
+    import importlib, subprocess
+    for module_name, pip_name in [
+        ("pandas", "pandas"),
+        ("numpy", "numpy"),
+        ("matplotlib", "matplotlib"),
+        ("seaborn", "seaborn"),
+        ("sklearn", "scikit-learn"),
+    ]:
+        try:
+            importlib.import_module(module_name)
+        except ModuleNotFoundError:
+            subprocess.run([sys.executable, "-m", "pip", "install", "-q", pip_name], check=False)
+
+print("라이브러리 준비 완료")
+'''
           fixed = 0
           for p in pathlib.Path('/tmp/jlite-contents').rglob('*.ipynb'):
               nb = json.loads(p.read_text(encoding='utf-8'))
@@ -91,20 +111,39 @@ jobs:
           print('patched_count', fixed)
           PY
 
-      - name: Build JupyterLite
+      - name: Build JupyterLite (with preloaded packages)
         run: |
           cat > /tmp/jupyter-lite.json << 'EOF'
           {
             "jupyter-lite-schema-version": 0,
             "jupyter-config-data": {
               "appName": "정보·AI 실습 JupyterLite",
-              "collaborative": false
+              "collaborative": false,
+              "litePluginSettings": {
+                "@jupyterlite/pyodide-kernel-extension:kernel": {
+                  "loadPyodideOptions": {
+                    "packages": [
+                      "numpy",
+                      "pandas",
+                      "matplotlib",
+                      "scipy",
+                      "scikit-learn",
+                      "seaborn",
+                      "micropip"
+                    ]
+                  }
+                }
+              }
             }
           }
           EOF
           cd /tmp
-          jupyter lite build --contents /tmp/jlite-contents --output-dir /tmp/jlite-out
+          jupyter lite build --contents /tmp/jlite-contents --output-dir /tmp/jlite-out --config /tmp/jupyter-lite.json
+          # ensure config is in output
+          cp /tmp/jupyter-lite.json /tmp/jlite-out/jupyter-lite.json || true
           du -sh /tmp/jlite-out
+          echo '--- jupyter-lite.json ---'
+          cat /tmp/jlite-out/jupyter-lite.json 2>/dev/null || cat /tmp/jupyter-lite.json
 
       - name: Commit to ai/jlite
         run: |
@@ -117,6 +156,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes"
           else
-            git commit -m "Build JupyterLite (student + teacher notebooks, piplite-compatible)"
+            git commit -m "Build JupyterLite with preloaded pandas/numpy/sklearn/seaborn"
             git push origin HEAD:main
           fi
