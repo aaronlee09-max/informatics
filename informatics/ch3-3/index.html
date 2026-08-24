@@ -3,58 +3,42 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>3-3 변수와 입출력</title>
+<title>정보 · 프로그래밍의 이해</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#f7fafc;color:#172033;font-family:"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif}
-main{width:min(980px,calc(100% - 48px));margin:0 auto;padding:56px 0}
-a{color:#0f766e;font-weight:800;text-decoration:none}
-h1{margin:28px 0 10px;font-size:clamp(36px,6vw,64px);line-height:1.05}
-.sub{margin:0 0 22px;color:#5c6b7d;font-size:18px;font-weight:700}
-.note{background:#e8f3fb;border-radius:14px;padding:14px 16px;color:#1c3f66;font-size:14px;line-height:1.55;margin-bottom:22px}
-.row{display:grid;grid-template-columns:1fr;gap:10px;padding:18px 0;border-top:1px solid #e5eaf0}
-.row:last-child{border-bottom:1px solid #e5eaf0}
-.downloads{display:flex;gap:8px;flex-wrap:wrap}
-.downloads a{display:inline-flex;align-items:center;justify-content:center;min-width:72px;border-radius:8px;padding:9px 12px;font-size:13px;font-weight:700;text-decoration:none}
-.run{background:#eff6ff;color:#1d4ed8;border:1px solid #93c5fd}
-.run.site{background:#ecfdf5;color:#047857;border:1px solid #6ee7b7}
-.run.ans{background:#fff7ed;color:#c2410c;border:1px solid #fdba74}
-.run.site.ans{background:#fef3c7;color:#b45309;border:1px solid #fcd34d}
-.dl{background:#fff;color:#0f766e;border:1px solid #c5d8ea}
-.dl.answer{border-color:#fcd34d;color:#b45309}
+:root{--bg:#f7fafc;--ink:#172033;--muted:#5c6b7d;--line:#d7e0ea;--blue:#2563eb;--green:#159957;--orange:#f28c28}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif}
+main{width:min(960px,calc(100% - 40px));margin:0 auto;padding:48px 0 80px}
+h1{font-size:clamp(28px,5vw,42px);margin:0 0 12px}
+.sub{color:var(--muted);margin-bottom:28px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:12px 0;box-shadow:0 8px 24px rgba(23,32,51,.05)}
+.card a{color:var(--blue);font-weight:800;text-decoration:none;margin-right:10px}
+.tag{display:inline-block;padding:4px 10px;border-radius:999px;background:#eef5ff;color:var(--blue);font-size:12px;font-weight:800;margin-bottom:8px}
 </style>
 </head>
 <body>
 <main>
-  <a href="../">← 정보 단원 목록</a>
-  <h1>3-3 변수와 입출력</h1>
-  <p class="sub">파이썬 변수·자료형·표준 입출력을 연습합니다.</p>
-  <div class="note"><b>사용 팁</b><br>
-  · <b>Colab</b> 권장 (가장 안정적)<br>
-  · <b>사이트실행</b>이 안 열리면 강력 새로고침(Ctrl+Shift+R) 후 다시 시도<br>
-  · <b>정답 Colab / 정답 사이트</b> — 선생님용</div>
-  <div class="row">
-    <strong>01 변수와 자료형</strong>
-    <div class="downloads">
-      <a class="run" href="https://colab.research.google.com/github/aaronlee09-max/informatics/blob/main/informatics/ch3-3/01_variables_and_types.ipynb" target="_blank" rel="noopener">Colab</a>
-      <a class="run site" href="/ai/jlite/lab/index.html?path=informatics/ch3-3/01_variables_and_types.ipynb" target="_blank">사이트실행</a>
-      <a class="dl" href="./01_variables_and_types.ipynb" download>노트북</a>
-      <a class="run ans" href="https://colab.research.google.com/github/aaronlee09-max/informatics/blob/main/informatics/ch3-3/01_variables_and_types_정답.ipynb" target="_blank" rel="noopener">정답 Colab</a>
-      <a class="run site ans" href="/ai/jlite/lab/index.html?path=informatics/ch3-3/01_variables_and_types_정답.ipynb" target="_blank">정답 사이트</a>
-      <a class="dl answer" href="./01_variables_and_types_정답.ipynb" download>정답</a>
-    </div>
+  <h1>Ⅲ-03 프로그래밍의 이해</h1>
+  <p class="sub">변수 · 자료형 · 연산자 · 조건 · 반복</p>
+  <div class="card"><span class="tag">실습</span><br>
+    <a href="01_variables_and_types.ipynb" download>01 변수와 자료형</a>
+    <a href="../jlite/notebooks/index.html?path=informatics/ch3-3/01_variables_and_types.ipynb" style="color:#047857">사이트실행</a>
+    <a href="https://colab.research.google.com/github/aaronlee09-max/informatics/blob/main/informatics/ch3-3/01_variables_and_types.ipynb" target="_blank" rel="noopener">Colab</a>
   </div>
-  <div class="row">
-    <strong>02 표준 입출력</strong>
-    <div class="downloads">
-      <a class="run" href="https://colab.research.google.com/github/aaronlee09-max/informatics/blob/main/informatics/ch3-3/02_standard_io.ipynb" target="_blank" rel="noopener">Colab</a>
-      <a class="run site" href="/ai/jlite/lab/index.html?path=informatics/ch3-3/02_standard_io.ipynb" target="_blank">사이트실행</a>
-      <a class="dl" href="./02_standard_io.ipynb" download>노트북</a>
-      <a class="run ans" href="https://colab.research.google.com/github/aaronlee09-max/informatics/blob/main/informatics/ch3-3/02_standard_io_정답.ipynb" target="_blank" rel="noopener">정답 Colab</a>
-      <a class="run site ans" href="/ai/jlite/lab/index.html?path=informatics/ch3-3/02_standard_io_정답.ipynb" target="_blank">정답 사이트</a>
-      <a class="dl answer" href="./02_standard_io_정답.ipynb" download>정답</a>
-    </div>
+  <div class="card"><span class="tag">정답</span><br>
+    <a href="01_variables_and_types_정답.ipynb" download>01 변수와 자료형 정답</a>
+    <a href="../jlite/notebooks/index.html?path=informatics/ch3-3/01_variables_and_types_정답.ipynb" style="color:#047857">사이트실행</a>
   </div>
 </main>
+<style id="site-back-style">
+.site-back{position:fixed;top:12px;left:12px;z-index:9999;display:inline-flex;align-items:center;gap:6px;
+padding:8px 14px;border-radius:999px;background:rgba(23,32,51,.9);color:#fff!important;
+font-weight:800;font-size:14px;text-decoration:none!important;
+font-family:"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
+box-shadow:0 4px 16px rgba(0,0,0,.28);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);
+transition:background .15s ease}
+.site-back:hover{background:#2563eb}
+@media print{.site-back{display:none!important}}
+</style>
+<a class="site-back" href="../" title="이전 페이지로 돌아가기">← 돌아가기</a>
 </body>
 </html>
