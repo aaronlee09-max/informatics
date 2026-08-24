@@ -62,29 +62,7 @@ jobs:
         run: |
           python3 << 'PY'
           import json, pathlib
-          # Colab용 subprocess pip은 브라우저에서 실패하므로,
-          # 패키지는 커널 preload로 이미 들어가 있다고 가정하고
-          # 설치 셀은 import 확인만 하도록 바꿈.
-          NEW = '''# 라이브러리는 JupyterLite 커널에 미리 포함되어 있습니다.
-# (Colab에서는 아래 설치 코드가 실행됩니다.)
-import sys
-
-if sys.platform != "emscripten":
-    import importlib, subprocess
-    for module_name, pip_name in [
-        ("pandas", "pandas"),
-        ("numpy", "numpy"),
-        ("matplotlib", "matplotlib"),
-        ("seaborn", "seaborn"),
-        ("sklearn", "scikit-learn"),
-    ]:
-        try:
-            importlib.import_module(module_name)
-        except ModuleNotFoundError:
-            subprocess.run([sys.executable, "-m", "pip", "install", "-q", pip_name], check=False)
-
-print("라이브러리 준비 완료")
-'''
+          NEW = '''# 라이브러리는 JupyterLite 커널에 미리 포함되어 있습니다.\n# (Colab에서는 아래 설치 코드가 실행됩니다.)\nimport sys\n\nif sys.platform != "emscripten":\n    import importlib, subprocess\n    for module_name, pip_name in [\n        ("pandas", "pandas"),\n        ("numpy", "numpy"),\n        ("matplotlib", "matplotlib"),\n        ("seaborn", "seaborn"),\n        ("sklearn", "scikit-learn"),\n    ]:\n        try:\n            importlib.import_module(module_name)\n        except ModuleNotFoundError:\n            subprocess.run([sys.executable, "-m", "pip", "install", "-q", pip_name], check=False)\n\nprint("라이브러리 준비 완료")\n'''
           fixed = 0
           for p in pathlib.Path('/tmp/jlite-contents').rglob('*.ipynb'):
               nb = json.loads(p.read_text(encoding='utf-8'))
@@ -111,39 +89,38 @@ print("라이브러리 준비 완료")
           print('patched_count', fixed)
           PY
 
-      - name: Build JupyterLite (with preloaded packages)
+      - name: Build JupyterLite
         run: |
-          cat > /tmp/jupyter-lite.json << 'EOF'
-          {
-            "jupyter-lite-schema-version": 0,
-            "jupyter-config-data": {
-              "appName": "정보·AI 실습 JupyterLite",
-              "collaborative": false,
-              "litePluginSettings": {
-                "@jupyterlite/pyodide-kernel-extension:kernel": {
-                  "loadPyodideOptions": {
-                    "packages": [
-                      "numpy",
-                      "pandas",
-                      "matplotlib",
-                      "scipy",
-                      "scikit-learn",
-                      "seaborn",
-                      "micropip"
-                    ]
-                  }
-                }
-              }
-            }
-          }
-          EOF
           cd /tmp
-          jupyter lite build --contents /tmp/jlite-contents --output-dir /tmp/jlite-out --config /tmp/jupyter-lite.json
-          # ensure config is in output
-          cp /tmp/jupyter-lite.json /tmp/jlite-out/jupyter-lite.json || true
+          jupyter lite build --contents /tmp/jlite-contents --output-dir /tmp/jlite-out
           du -sh /tmp/jlite-out
-          echo '--- jupyter-lite.json ---'
-          cat /tmp/jlite-out/jupyter-lite.json 2>/dev/null || cat /tmp/jupyter-lite.json
+
+      - name: Inject preloaded packages into jupyter-lite.json
+        run: |
+          python3 << 'PY'
+          import json, pathlib
+          p = pathlib.Path('/tmp/jlite-out/jupyter-lite.json')
+          data = json.loads(p.read_text(encoding='utf-8'))
+          cfg = data.setdefault('jupyter-config-data', {})
+          cfg['appName'] = '정보·AI 실습 JupyterLite'
+          cfg['collaborative'] = False
+          plugins = cfg.setdefault('litePluginSettings', {})
+          kernel = plugins.setdefault('@jupyterlite/pyodide-kernel-extension:kernel', {})
+          opts = kernel.setdefault('loadPyodideOptions', {})
+          # Pyodide에 미리 올릴 패키지 (커널 시작 시 로드)
+          opts['packages'] = [
+              'numpy',
+              'pandas',
+              'matplotlib',
+              'scipy',
+              'scikit-learn',
+              'seaborn',
+              'micropip',
+          ]
+          p.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
+          print('packages injected:', opts['packages'])
+          print(p.read_text(encoding='utf-8')[:800])
+          PY
 
       - name: Commit to ai/jlite
         run: |
