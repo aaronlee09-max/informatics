@@ -60,6 +60,37 @@ jobs:
           echo '--- staged ---'
           find /tmp/jlite-contents -type f | sort
 
+      - name: Patch notebooks for JupyterLite (piplite)
+        run: |
+          python3 << 'PY'
+          import json, pathlib
+          NEW = '''# 실습에 필요한 라이브러리 준비 (Colab + JupyterLite 호환)\nimport sys\n\n_packages = [\n    ("pandas", "pandas"),\n    ("numpy", "numpy"),\n    ("matplotlib", "matplotlib"),\n    ("seaborn", "seaborn"),\n    ("sklearn", "scikit-learn"),\n]\n\nif sys.platform == "emscripten":\n    import piplite\n    await piplite.install([pip_name for _, pip_name in _packages])\nelse:\n    import importlib, subprocess\n    for module_name, pip_name in _packages:\n        try:\n            importlib.import_module(module_name)\n        except ModuleNotFoundError:\n            subprocess.run([sys.executable, "-m", "pip", "install", "-q", pip_name], check=False)\n\nprint("라이브러리 준비 완료")\n'''
+          fixed = 0
+          for p in pathlib.Path('/tmp/jlite-contents').rglob('*.ipynb'):
+              nb = json.loads(p.read_text(encoding='utf-8'))
+              changed = False
+              for c in nb.get('cells', []):
+                  if c.get('cell_type') != 'code':
+                      continue
+                  src = ''.join(c.get('source', []))
+                  if 'subprocess' in src and 'pip' in src and 'importlib' in src:
+                      extra = ''
+                      if 'set_config' in src:
+                          extra = 'from sklearn import set_config\nset_config(display="text")\n\n'
+                      body = NEW
+                      if extra:
+                          body = body.replace('print("라이브러리 준비 완료")', extra + 'print("라이브러리 준비 완료")')
+                      c['source'] = body.splitlines(keepends=True)
+                      c['outputs'] = []
+                      c['execution_count'] = None
+                      changed = True
+              if changed:
+                  p.write_text(json.dumps(nb, ensure_ascii=False, indent=1), encoding='utf-8')
+                  fixed += 1
+                  print('patched', p)
+          print('patched_count', fixed)
+          PY
+
       - name: Build JupyterLite
         run: |
           cat > /tmp/jupyter-lite.json << 'EOF'
@@ -86,6 +117,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes"
           else
-            git commit -m "Build JupyterLite (student + teacher notebooks)"
+            git commit -m "Build JupyterLite (student + teacher notebooks, piplite-compatible)"
             git push origin HEAD:main
           fi
