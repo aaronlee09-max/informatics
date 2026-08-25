@@ -42,15 +42,9 @@
       }
     },
     "collaborative": false,
-    "contentsStorageDrivers": [
-      "memorystorage-memory"
-    ],
-    "settingsStorageDrivers": [
-      "memorystorage-memory"
-    ],
-    "workspacesStorageDrivers": [
-      "memorystorage-memory"
-    ]
+    "contentsStorageDrivers": ["memorystorage-memory"],
+    "settingsStorageDrivers": ["memorystorage-memory"],
+    "workspacesStorageDrivers": ["memorystorage-memory"]
   },
   "jupyter-lite-schema-version": 0
 }
