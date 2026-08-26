@@ -1,0 +1,99 @@
+name: Inject site nav (이전 · 홈)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  inject:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Inject floating 이전/홈 buttons
+        run: |
+          python3 << 'PY'
+          from pathlib import Path
+          import re
+
+          NAV_CSS = '''<style id="site-nav-style">
+          .site-nav{position:fixed;top:12px;left:12px;z-index:9999;display:flex;gap:8px;flex-wrap:wrap}
+          .site-nav a{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:999px;
+          background:rgba(23,32,51,.9);color:#fff!important;font-weight:800;font-size:14px;text-decoration:none!important;
+          font-family:"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
+          box-shadow:0 4px 16px rgba(0,0,0,.28);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);
+          transition:background .15s ease}
+          .site-nav a:hover{background:#2563eb}
+          .site-nav a.home{background:rgba(37,99,235,.92)}
+          .site-nav a.home:hover{background:#1d4ed8}
+          @media print{.site-nav{display:none!important}}
+          </style>
+          '''
+
+          def make_nav(parent):
+              return (
+                  NAV_CSS
+                  + '<nav class="site-nav" aria-label="페이지 이동">'
+                  + f'<a href="{parent}" title="이전 화면으로">← 이전</a>'
+                  + '<a class="home" href="/" title="홈으로 가기">홈</a>'
+                  + '</nav>\n'
+              )
+
+          def strip_old(html):
+              html = re.sub(r'<style id="site-back-style">[\s\S]*?</style>\s*', '', html)
+              html = re.sub(r'<style id="site-nav-style">[\s\S]*?</style>\s*', '', html)
+              html = re.sub(r'<a class="site-back"[^>]*>[\s\S]*?</a>\s*', '', html)
+              html = re.sub(r'<nav class="site-nav"[\s\S]*?</nav>\s*', '', html)
+              return html
+
+          def parent_for(path: Path) -> str:
+              parts = path.parts
+              if path.name == 'viewer.html':
+                  return './'
+              if path.name == 'index.html':
+                  if len(parts) <= 2:
+                      return '/'
+                  return '../'
+              return '../'
+
+          skip = {Path('index.html')}
+          changed = []
+          for p in sorted(Path('.').rglob('*.html')):
+              s = str(p)
+              if any(x in s for x in ['jlite/', 'node_modules', '.git']):
+                  continue
+              if p in skip:
+                  continue
+              t = p.read_text(encoding='utf-8', errors='ignore')
+              if '</body>' not in t.lower():
+                  continue
+              # only site content pages
+              if not (
+                  'class="slide' in t or 'class="deck"' in t or "class='deck'" in t
+                  or p.parts[0] in ('ai', 'informatics', 'data', 'software', 'curriculum')
+                  or 'textbook' in s
+              ):
+                  continue
+              parent = parent_for(p)
+              t2 = strip_old(t)
+              t2 = re.sub(r'</body>', make_nav(parent) + '</body>', t2, count=1, flags=re.I)
+              if t2 != t:
+                  p.write_text(t2, encoding='utf-8')
+                  changed.append(s)
+                  print('patched', s)
+          print('TOTAL', len(changed))
+          PY
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No changes"
+          else
+            git commit -m "site: 모든 페이지에 ← 이전 · 홈 버튼 추가"
+            git push
+          fi
