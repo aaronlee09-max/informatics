@@ -1,0 +1,174 @@
+name: Sync content from bloomgloom
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout local site
+        uses: actions/checkout@v4
+        with:
+          path: site
+
+      - name: Checkout bloomgloom source
+        uses: actions/checkout@v4
+        with:
+          repository: bloomgloom/informatics
+          path: bloom
+
+      - name: Copy bloomgloom content only
+        run: |
+          python3 << 'PY'
+          import json, shutil
+          from pathlib import Path
+
+          bloom = Path('bloom')
+          site = Path('site')
+
+          # Content trees to overlay from bloomgloom.
+          # Local-only extras (textbook, jlite, 정답, custom chapters) are kept.
+          CONTENT_ROOTS = ['informatics', 'ai', 'curriculum', 'data', 'software']
+          SKIP_DIR_PARTS = {'textbook', 'jlite', 'files', '.git'}
+          SKIP_NAME_SUBSTR = ('_정답',)
+          TEXT_EXT = {'.html', '.css', '.js', '.ipynb', '.svg', '.csv', '.md'}
+          BIN_EXT = {'.png', '.jpg', '.jpeg', '.gif', '.webp', '.pdf', '.xls', '.xlsx'}
+
+          def skip_path(rel: Path) -> bool:
+              parts = set(rel.parts)
+              if parts & SKIP_DIR_PARTS:
+                  return True
+              name = rel.name
+              if any(s in name for s in SKIP_NAME_SUBSTR):
+                  return True
+              return False
+
+          copied = 0
+          for root in CONTENT_ROOTS:
+              src_root = bloom / root
+              if not src_root.exists():
+                  continue
+              for src in src_root.rglob('*'):
+                  if src.is_dir():
+                      continue
+                  rel = src.relative_to(bloom)
+                  if skip_path(rel):
+                      continue
+                  if src.suffix.lower() not in TEXT_EXT | BIN_EXT and src.name not in {'index.html'}:
+                      # still copy unknown content files under those trees
+                      pass
+                  dst = site / rel
+                  dst.parent.mkdir(parents=True, exist_ok=True)
+                  shutil.copy2(src, dst)
+                  copied += 1
+                  print('copied', rel)
+          print('COPIED', copied)
+          PY
+
+      - name: Re-inject CSV helper into lab notebooks
+        run: |
+          python3 << 'PY'
+          import json
+          from pathlib import Path
+          ROOT = Path('site')
+          DIR_CSVS = {
+              'ai/ch2-1': [
+                  ('earthquake.csv', 'ai/ch2-1/earthquake.csv'),
+                  ('penguins_size.csv', 'ai/ch2-1/penguins_size.csv'),
+              ],
+              'ai/ch2-2/2': [
+                  ('jeans.csv', 'ai/ch2-2/2/jeans.csv'),
+                  ('abalone_original.csv', 'ai/ch2-2/2/abalone_original.csv'),
+              ],
+              'ai/ch2-2/3': [
+                  ('penguins_size.csv', 'ai/ch2-2/3/penguins_size.csv'),
+                  ('food.csv', 'ai/ch2-2/3/food.csv'),
+                  ('airline_passenger_satisfaction.csv', 'ai/ch2-2/3/airline_passenger_satisfaction.csv'),
+              ],
+              'ai/ch2-2/4': [
+                  ('Mall_Customers.csv', 'ai/ch2-2/4/Mall_Customers.csv'),
+                  ('caffe_menu.csv', 'ai/ch2-2/4/caffe_menu.csv'),
+              ],
+              'informatics/ch2-3': [
+                  ('navermusic_genre.csv', 'informatics/ch2-3/navermusic_genre.csv'),
+              ],
+          }
+          ENSURE = '''# CSV 자동 준비 (Colab · JupyterLite · 로컬 공통)\nimport sys\nfrom pathlib import Path\n\ndef ensure_csv(filename, repo_path):\n    candidates = [Path(filename), Path(repo_path), Path("files")/repo_path, Path("/files")/repo_path]\n    for c in candidates:\n        try:\n            if c.is_file():\n                if not Path(filename).exists():\n                    Path(filename).write_bytes(c.read_bytes())\n                return filename\n        except Exception:\n            pass\n    url = f"https://raw.githubusercontent.com/aaronlee09-max/informatics/main/{repo_path}"\n    try:\n        if sys.platform == "emscripten":\n            from pyodide.http import open_url\n            Path(filename).write_text(open_url(url).read(), encoding="utf-8")\n        else:\n            import urllib.request\n            urllib.request.urlretrieve(url, filename)\n        print("CSV 준비:", filename)\n        return filename\n    except Exception as e:\n        print("CSV 준비 실패 → URL 사용:", url, e)\n        return url\n\n'''
+          for dir_rel, csvs in DIR_CSVS.items():
+              d = ROOT / dir_rel
+              if not d.is_dir():
+                  continue
+              existing = [(n,r) for n,r in csvs if (ROOT/r).exists()]
+              if not existing:
+                  continue
+              for p in sorted(d.glob('*.ipynb')):
+                  nb = json.loads(p.read_text(encoding='utf-8'))
+                  idx = next((i for i,c in enumerate(nb['cells']) if c.get('cell_type')=='code'), None)
+                  if idx is None:
+                      continue
+                  src = ''.join(nb['cells'][idx].get('source', []))
+                  if 'def ensure_csv(' in src:
+                      continue
+                  calls = '\n'.join(f"ensure_csv({n!r}, {r!r})" for n,r in existing)
+                  new = ENSURE + calls + '\n\n' + src
+                  lines = new.splitlines(keepends=True)
+                  if lines and not lines[-1].endswith('\n'):
+                      lines[-1] += '\n'
+                  nb['cells'][idx]['source'] = lines
+                  p.write_text(json.dumps(nb, ensure_ascii=False, indent=1)+'\n', encoding='utf-8')
+                  print('csv-patched', p)
+          PY
+
+      - name: Re-inject 이전/홈 buttons on HTML pages
+        run: |
+          python3 << 'PY'
+          from pathlib import Path
+          root = Path('site')
+          css = '''<style id="site-nav-float">\n.site-nav-float{position:fixed;top:12px;left:12px;z-index:9999;display:flex;gap:8px;font-family:"Apple SD Gothic Neo","Noto Sans KR",sans-serif}\n.site-nav-float a{display:inline-block;padding:8px 14px;border-radius:999px;background:rgba(23,32,51,.88);color:#fff;text-decoration:none;font-weight:800;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.18)}\n.site-nav-float a:hover{background:#2563eb}\n</style>'''
+          bar = '''<div class="site-nav-float" id="site-nav-float"><a href="../">← 이전</a><a href="/">홈</a></div>'''
+          changed=0
+          for p in root.rglob('*.html'):
+              rel=str(p.relative_to(root))
+              if rel.startswith('.github') or '/jlite/' in rel.replace('\\','/'):
+                  continue
+              t=p.read_text(encoding='utf-8', errors='ignore')
+              if 'id="site-nav-float"' in t or 'class="site-nav-float"' in t:
+                  continue
+              depth=len(p.relative_to(root).parts)-1
+              prev='../' if depth else './'
+              home='/' 
+              local_bar=bar.replace('href="../"', f'href="{prev}"').replace('href="/"', f'href="{home}"')
+              nt=t
+              if '</head>' in nt:
+                  nt=nt.replace('</head>', css+'\n</head>', 1)
+              else:
+                  nt=css+'\n'+nt
+              if '<body' in nt:
+                  i=nt.find('<body')
+                  j=nt.find('>', i)
+                  nt=nt[:j+1]+'\n'+local_bar+nt[j+1:]
+              else:
+                  nt=local_bar+'\n'+nt
+              if nt!=t:
+                  p.write_text(nt, encoding='utf-8')
+                  changed+=1
+                  print('nav', rel)
+          print('NAV', changed)
+          PY
+
+      - name: Commit content sync
+        working-directory: site
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No content changes from bloomgloom"
+          else
+            git commit -m "content: bloomgloom 원본 내용만 동기화 (기능/정답/뷰어 유지)"
+            git push
+          fi
