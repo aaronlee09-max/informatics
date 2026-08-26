@@ -1,0 +1,92 @@
+name: Ensure CSV in notebooks
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Inject ensure_csv into lab notebooks
+        run: |
+          python3 << 'PY'
+          import json
+          from pathlib import Path
+
+          ROOT = Path('.')
+          DIR_CSVS = {
+              'ai/ch2-1': [
+                  ('earthquake.csv', 'ai/ch2-1/earthquake.csv'),
+                  ('penguins_size.csv', 'ai/ch2-1/penguins_size.csv'),
+              ],
+              'ai/ch2-2/2': [
+                  ('jeans.csv', 'ai/ch2-2/2/jeans.csv'),
+                  ('abalone_original.csv', 'ai/ch2-2/2/abalone_original.csv'),
+              ],
+              'ai/ch2-2/3': [
+                  ('penguins_size.csv', 'ai/ch2-2/3/penguins_size.csv'),
+                  ('food.csv', 'ai/ch2-2/3/food.csv'),
+                  ('airline_passenger_satisfaction.csv', 'ai/ch2-2/3/airline_passenger_satisfaction.csv'),
+              ],
+              'ai/ch2-2/4': [
+                  ('Mall_Customers.csv', 'ai/ch2-2/4/Mall_Customers.csv'),
+                  ('caffe_menu.csv', 'ai/ch2-2/4/caffe_menu.csv'),
+              ],
+              'informatics/ch2-3': [
+                  ('navermusic_genre.csv', 'informatics/ch2-3/navermusic_genre.csv'),
+              ],
+          }
+
+          ENSURE_TEMPLATE = '''# CSV 자동 준비 (Colab · JupyterLite · 로컬 공통)\n# 파일이 없으면 GitHub raw에서 받아 cwd에 저장 → pd.read_csv("파일명") 그대로 동작\nimport sys\nfrom pathlib import Path\n\ndef ensure_csv(filename, repo_path):\n    candidates = [\n        Path(filename),\n        Path(repo_path),\n        Path("files") / repo_path,\n        Path("/files") / repo_path,\n        Path(repo_path).name,\n    ]\n    for c in candidates:\n        try:\n            if c.is_file():\n                if not Path(filename).exists():\n                    Path(filename).write_bytes(c.read_bytes())\n                return filename\n        except Exception:\n            pass\n    url = f"https://raw.githubusercontent.com/aaronlee09-max/informatics/main/{repo_path}"\n    try:\n        if sys.platform == "emscripten":\n            from pyodide.http import open_url\n            Path(filename).write_text(open_url(url).read(), encoding="utf-8")\n        else:\n            import urllib.request\n            urllib.request.urlretrieve(url, filename)\n        print("CSV 준비:", filename)\n        return filename\n    except Exception as e:\n        print("CSV 준비 실패 → URL 직접 사용:", url, e)\n        return url\n\n'''
+
+          MARKER = 'def ensure_csv('
+
+          def inject(nb, csv_list):
+              idx = next((i for i, c in enumerate(nb['cells']) if c.get('cell_type') == 'code'), None)
+              if idx is None:
+                  return False
+              src = ''.join(nb['cells'][idx].get('source', []))
+              if MARKER in src:
+                  return False
+              calls = '\n'.join(f'ensure_csv({n!r}, {r!r})' for n, r in csv_list)
+              block = ENSURE_TEMPLATE + calls + '\n\n'
+              new_src = block + src
+              lines = new_src.splitlines(keepends=True)
+              if lines and not lines[-1].endswith('\n'):
+                  lines[-1] += '\n'
+              nb['cells'][idx]['source'] = lines
+              return True
+
+          changed = []
+          for dir_rel, csvs in DIR_CSVS.items():
+              d = ROOT / dir_rel
+              if not d.is_dir():
+                  continue
+              existing = [(n, r) for n, r in csvs if (ROOT / r).exists()]
+              if not existing:
+                  continue
+              for p in sorted(d.glob('*.ipynb')):
+                  nb = json.loads(p.read_text(encoding='utf-8'))
+                  if inject(nb, existing):
+                      p.write_text(json.dumps(nb, ensure_ascii=False, indent=1) + '\n', encoding='utf-8')
+                      changed.append(str(p))
+                      print('patched', p)
+          print('TOTAL', len(changed))
+          PY
+
+      - name: Commit notebook patches
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No notebook changes"
+          else
+            git commit -m "notebooks: CSV 자동 준비 (Colab/JupyterLite에서 pd.read_csv 바로 동작)"
+            git push
+          fi
