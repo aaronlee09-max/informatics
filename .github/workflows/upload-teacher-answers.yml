@@ -1,0 +1,169 @@
+name: Upload teacher answer notebooks
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch teacher notebooks from raw artifacts path
+        run: |
+          # Use previously prepared ensure-csv versions as base; teacher filled answers applied via Python merge
+          python3 << 'PY'
+          import json, urllib.request
+          from pathlib import Path
+
+          def load_raw(path):
+              url = f'https://raw.githubusercontent.com/aaronlee09-max/informatics/main/{path}'
+              req = urllib.request.Request(url, headers={'User-Agent':'Mozilla/5.0'})
+              return json.loads(urllib.request.urlopen(req, timeout=60).read().decode())
+
+          # Teacher answers (filled 확인하기 + code) — embedded as minimal structure updates
+          # 실습4: fill markdown answers and match attached teacher code
+          p4 = Path('ai/ch2-2/4/실습4_쇼핑몰_고객_군집_모델_구현하기_정답.ipynb')
+          nb4 = json.loads(p4.read_text(encoding='utf-8'))
+
+          answers4 = {
+              '고객이 모두 몇 명': '**200명**',
+              '속성(열)은 몇 개': '**5개**',
+              '결측치가 있는 속성이 있는가': '**없다**',
+              '특징(data)은 몇 개': '**2개**',
+              '왜 타깃 y가 필요 없는가': '**군집 분석은 정답이 없는 비지도학습이므로, 고객을 비슷한 특성으로 묶는 것이 목표라서 타깃 y가 필요하지 않다.**',
+              '각각 몇 명의 고객': '**군집 0: 81명, 군집 1: 39명, 군집 2: 22명, 군집 3: 35명, 군집 4: 23명**',
+              '더 좋은 군집이라는 뜻인가': '**아니다. 군집 번호는 단순한 이름표일 뿐이며, 우열은 없다.**',
+              '검은 별표(중심점)는 무엇을': '**각 군집의 평균 연 소득과 평균 소비 점수를 나타내는 중심점이다.**',
+              '모두 높은 군집은 어디에': '**오른쪽 위**',
+              '실루엣 점수는 약 얼마': '**약 0.55**',
+              '가장 높은 k는 얼마인가': '**보통 5**',
+              'k=5의 점수와 비교': '**대체로 비슷하거나 약간 높아서, 5개 군집이 적절하다고 볼 수 있다.**',
+          }
+
+          for c in nb4['cells']:
+              if c.get('cell_type') != 'markdown':
+                  continue
+              src = ''.join(c.get('source', []))
+              new = src
+              # fill blank parentheses style answers where still empty
+              replacements = [
+                  ('→ (　　　) 명', '→ **200명**'),
+                  ('→ (　) 개', '→ **5개**'),  # first occurrence attributes - careful
+                  ('→ (　　　　　　)', '→ **없다**'),
+              ]
+              # More precise filled blocks from teacher file
+              if '고객이 모두 몇 명' in src and '200명' not in src:
+                  new = '''**❓ 확인하기**\n\n- 이 데이터에는 고객이 모두 몇 명 있는가?  → **200명**\n- 데이터의 속성(열)은 몇 개인가?  → **5개**\n- 결측치가 있는 속성이 있는가?  → **없다**'''
+              elif '특징(data)은 몇 개' in src and '2개' not in src:
+                  new = '''**❓ 확인하기**\n\n- 군집에 사용할 특징(data)은 몇 개인가?  → **2개**\n- 군집 분석에는 왜 타깃 y가 필요 없는가?\n\n  → **군집 분석은 정답이 없는 비지도학습이므로, 고객을 비슷한 특성으로 묶는 것이 목표라서 타깃 y가 필요하지 않다.**'''
+              elif '군집 0~4에는 각각' in src and '81명' not in src:
+                  new = '''**❓ 확인하기**\n\n- 군집 0~4에는 각각 몇 명의 고객이 있는가?\n\n  → **군집 0: 81명, 군집 1: 39명, 군집 2: 22명, 군집 3: 35명, 군집 4: 23명**\n- 군집 번호가 크다고 더 좋은 군집이라는 뜻인가?  → **아니다. 군집 번호는 단순한 이름표일 뿐이며, 우열은 없다.**'''
+              elif '검은 별표' in src and '중심점이다' not in src:
+                  new = '''**❓ 확인하기**\n\n- 산점도에서 검은 별표(중심점)는 무엇을 나타내는가?\n\n  → **각 군집의 평균 연 소득과 평균 소비 점수를 나타내는 중심점이다.**\n- 소득도 소비 점수도 모두 높은 군집은 어디에 위치하는가? (오른쪽 위 / 오른쪽 아래 / 왼쪽 위 / 왼쪽 아래)  → **오른쪽 위**'''
+              elif 'k=5일 때 실루엣' in src and '0.55' not in src:
+                  new = '''**❓ 확인하기**\n\n- k=5일 때 실루엣 점수는 약 얼마인가?  → **약 0.55**'''
+              elif '실루엣 점수가 가장 높은 k' in src and '보통 5' not in src:
+                  new = '''**❓ 확인하기**\n\n- 실루엣 점수가 가장 높은 k는 얼마인가?  → **보통 5**\n- 그 점수는 교과서에서 사용한 k=5의 점수와 비교했을 때 어떠한가?\n\n  → **대체로 비슷하거나 약간 높아서, 5개 군집이 적절하다고 볼 수 있다.**'''
+              elif '🏁 마무리' in src and '비지도학습이므로' not in src:
+                  new = '''## 🏁 마무리\n\n1. 지도학습과 달리 군집 모델에 타깃 y가 필요 없는 이유는 무엇인가?\n\n   → **군집은 정답이 없는 비지도학습이므로, 고객의 실제 라벨을 맞히는 것이 아니라 비슷한 특성을 가진 집단으로 묶는 것이 목표이기 때문이다.**\n\n2. 군집 0~4의 고객 특성을 연 소득과 소비 점수로 설명해 보자.\n\n   → **각 군집은 연 소득과 소비 점수의 조합이 다르다. 예를 들어 고소득·고소비 군집, 저소득·저소비 군집, 중간 소득·높은 소비 군집처럼 서로 다른 성향을 가진 고객 집단으로 나뉜다.**\n\n3. 실루엣 점수가 가장 높은 k와 교과서의 k=5 결과를 비교해 보자.\n\n   → **실루엣 점수가 가장 높은 k는 보통 5 근처이며, 교과서의 k=5와 비슷하거나 약간 높게 나타나므로 5개 군집이 적절하다고 볼 수 있다.**'''
+
+              if new != src:
+                  c['source'] = [line + '\n' for line in new.split('\n')]
+                  if c['source'] and c['source'][-1] == '\n':
+                      pass
+                  # fix trailing
+                  lines = new.splitlines(keepends=True)
+                  if lines and not lines[-1].endswith('\n'):
+                      lines[-1] += '\n'
+                  c['source'] = lines
+
+          # Teacher code patterns for 실습4
+          code_map4 = {
+              'pandas를 가져오고 Mall_Customers': '''# pandas를 가져오고 Mall_Customers.csv를 df로 불러오기\nimport pandas as pd\ndf = pd.read_csv(\'Mall_Customers.csv\')\n\n# 처음 5행, 데이터 정보, 열별 결측치 수 확인하기\ndf.head()\ndf.info()\ndf.isnull().sum()\n''',
+              '연 소득과 소비 점수 열만 선택': '''# 연 소득과 소비 점수 열만 선택해 data에 저장하고 처음 5행 확인하기\ndata = df[[\'Annual Income (k$)\', \'Spending Score (1-100)\']]\nprint(data.head())\n''',
+              'KMeans를 가져와 군집 5개': '''# KMeans를 가져와 군집 5개인 model 만들기(random_state=42, n_init=10)\nfrom sklearn.cluster import KMeans\nk = 5\nmodel = KMeans(n_clusters=k, random_state=42, n_init=10)\n# data로 모델 학습하기\nmodel.fit(data)\n''',
+              'model.labels_를 df의 cluster': '''# model.labels_를 df의 cluster 열에 저장하기\ndf[\'cluster\'] = model.labels_\n# model.cluster_centers_를 centers에 저장하고 출력하기\nfinal_centroid = model.cluster_centers_\nprint(final_centroid)\n# df의 처음 10행에서 특징과 cluster 확인하기\nprint(df[[\'Annual Income (k$)\', \'Spending Score (1-100)\', \'cluster\']].head(10))\n''',
+              '연 소득-소비 점수 산점도를 cluster': '''import seaborn as sns\nimport matplotlib.pyplot as plt\n\n# 연 소득-소비 점수 산점도를 cluster별 색으로 표시하기\nsns.scatterplot(data=df, x=\'Annual Income (k$)\', y=\'Spending Score (1-100)\', hue=\'cluster\', palette=\'deep\')\n\n# centers를 검은 별표로 표시하고 그래프 보여 주기\nplt.scatter(final_centroid[:, 0], final_centroid[:, 1], marker=\'*\', color=\'black\', s=200, label=\'Centroids\')\nplt.legend()\nplt.show()\n''',
+              'silhouette_score를 가져와 data': '''# silhouette_score를 가져와 data와 model.labels_로 실루엣 점수 구하기\nfrom sklearn.metrics import silhouette_score\n\nscore = silhouette_score(data, model.labels_)\nprint(score)\n''',
+              'ks=range(2,9), scores=[]': '''# ks=range(2,9), scores=[] 준비하기\nfrom sklearn.metrics import silhouette_score\n\nks = range(2, 9)\nscores = []\n\n# 각 k로 KMeans 모델을 학습하고 실루엣 점수를 scores에 추가하기\nfor k in ks:\n    model = KMeans(n_clusters=k, random_state=42, n_init=10)\n    labels = model.fit_predict(data)\n    score = silhouette_score(data, labels)\n    scores.append((k, score))\n\n# k별 점수를 출력하고 가장 높은 점수의 k 찾기\nprint(scores)\nprint(\'best k:\', max(scores, key=lambda x: x[1])[0])\nprint(\'best score:\', max(scores, key=lambda x: x[1])[1])\n''',
+          }
+
+          for c in nb4['cells']:
+              if c.get('cell_type') != 'code':
+                  continue
+              src = ''.join(c.get('source', []))
+              for key, body in code_map4.items():
+                  if key in src and 'ensure_csv' not in src:
+                      lines = body.splitlines(keepends=True)
+                      if lines and not lines[-1].endswith('\n'):
+                          lines[-1] += '\n'
+                      c['source'] = lines
+                      break
+
+          p4.write_text(json.dumps(nb4, ensure_ascii=False, indent=1) + '\n', encoding='utf-8')
+          print('updated', p4)
+
+          # 실습3 penguin answers
+          p3 = Path('ai/ch2-2/3/실습3_펭귄_종_분류_모델_구현하기_정답.ipynb')
+          nb3 = json.loads(p3.read_text(encoding='utf-8'))
+          for c in nb3['cells']:
+              if c.get('cell_type') != 'markdown':
+                  continue
+              src = ''.join(c.get('source', []))
+              new = src
+              if '데이터가 모두 몇 개' in src and '344개' not in src:
+                  new = '''**❓ 확인하기**\n\n- 이 데이터에는 데이터가 모두 몇 개 있는가?  → **344개**\n- 결측치가 있는 속성은 무엇이고, 각각 몇 개인가?\n\n  → **culmen_length_mm 2개, culmen_depth_mm 2개, flipper_length_mm 2개, body_mass_g 2개, sex 11개**'''
+              elif '결측치를 삭제한 후' in src and '333개' not in src and '334' not in src:
+                  new = '''**❓ 확인하기**\n\n- 결측치를 삭제한 후 데이터는 몇 개로 줄었는가?  → **333개**'''
+              elif '특징 X로 선택한 속성' in src and 'Adelie' not in src:
+                  new = '''**❓ 확인하기**\n\n- 특징 X로 선택한 속성은 몇 개인가?  → **3개**\n- 타깃 y인 species에는 어떤 값이 있는가?\n\n  → **Adelie, Chinstrap, Gentoo**'''
+              elif '훈련 데이터와 테스트 데이터는 각각' in src and '233개' not in src:
+                  new = '''**❓ 확인하기**\n\n- 훈련 데이터와 테스트 데이터는 각각 몇 개인가?  → 훈련 **233개** · 테스트 **100개**\n- `stratify=y`를 사용하면 어떤 효과가 있는가?\n\n  → **훈련 데이터와 테스트 데이터에서 펭귄 종별 비율을 비슷하게 유지한다.**'''
+              elif '훈련 데이터에 대한 정확도' in src and '100%' not in src and '1.0' not in src:
+                  new = '''**❓ 확인하기**\n\n- 훈련 데이터에 대한 정확도(`dt.score(X_train, y_train)`)는 약 얼마인가?  → **약 100% (1.0)**\n'''
+              elif '루트 노드' in src and 'flipper' not in src:
+                  new = '''**❓ 확인하기**\n\n- 트리의 맨 위(루트 노드)에서 가장 먼저 사용한 특징은 무엇인가?  → **flipper_length_mm (날개 길이)**\n- 그 특징의 기준값(threshold)은 대략 얼마인가?  → **207.5 mm**\n'''
+              elif '테스트 데이터에 대한 정확도' in src and '94' not in src:
+                  new = '''**❓ 확인하기**\n\n- 테스트 데이터에 대한 정확도는 약 얼마인가?  → **약 94.1% (0.941)**\n- 훈련 정확도와 테스트 정확도를 비교해 보자. 차이가 있는가?\n\n  → **있다. 훈련 정확도는 100%에 가까운데 테스트 정확도는 약 94.1%로 조금 낮다. 이는 모델이 훈련 데이터에 과하게 맞춰진 과적합 가능성이 있지만, 여전히 높은 성능을 보인다.**\n'''
+              elif '🏁 마무리' in src and 'flipper_length_mm' not in src:
+                  new = '''## 🏁 마무리\n\n1. 루트 노드에서 가장 먼저 사용한 특징은 무엇인가?\n\n- 루트 노드에서 가장 먼저 사용한 특징은 `flipper_length_mm`(날개 길이)입니다.\n\n2. 훈련 정확도와 테스트 정확도가 다른 이유는 무엇인가?\n\n- 훈련 정확도는 모델이 학습 데이터에 얼마나 잘 맞는지를 뜻하고, 테스트 정확도는 아직 보지 못한 데이터에 대한 일반화 성능을 뜻합니다. 결정트리 모델은 훈련 데이터에 과하게 맞춰질 수 있어서 훈련 정확도는 매우 높고 테스트 정확도는 조금 낮게 나올 수 있습니다.\n\n3. 이 모델을 실제 생태 조사에 활용한다면 어떤 점에 주의해야 할까?\n\n- 실제 조사 데이터는 지역, 계절, 개체 차이 등으로 인해 학습 데이터와 다를 수 있습니다. 따라서 측정 값이 조금만 달라도 예측이 바뀔 수 있으므로, 데이터가 적거나 편향되어 있으면 주의가 필요합니다. 실제 사용 전에 추가 데이터로 검증하고, 결과를 생태학적 맥락과 함께 해석해야 합니다.\n'''
+              if new != src:
+                  lines = new.splitlines(keepends=True)
+                  if lines and not lines[-1].endswith('\n'):
+                      lines[-1] += '\n'
+                  c['source'] = lines
+
+          code_map3 = {
+              'pandas로 penguins_size': '''# pandas로 penguins_size.csv를 불러와 df에 저장하고 정보 확인하기\nimport pandas as pd\ndf = pd.read_csv(\'penguins_size.csv\')\ndf.info()\n''',
+              '열별 결측치 개수를 확인': '''# 열별 결측치 개수를 확인한 뒤 결측치가 있는 행 삭제하기\nprint(df.isnull().sum())\ndf.dropna(axis=0, inplace=True)\ndf.info()\n''',
+              '부리 길이, 부리 깊이, 날개': '''# 부리 길이, 부리 깊이, 날개 길이를 X로, species를 y로 선정하기\nX = df[[\'culmen_length_mm\', \'culmen_depth_mm\', \'flipper_length_mm\']]\ny = df[\'species\']\ny.unique()\n''',
+              '훈련 70%, 테스트 30%': '''# 데이터를 훈련 70%, 테스트 30%로 계층 분할하기(random_state=42)\nfrom sklearn.model_selection import train_test_split\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.3, random_state=42, stratify=y\n)\nprint(X_train.shape, X_test.shape, y_train.shape, y_test.shape)\n''',
+              'DecisionTreeClassifier 모델': '''# DecisionTreeClassifier 모델(dt)을 만들고 훈련 데이터로 학습하기(random_state=42)\nfrom sklearn.tree import DecisionTreeClassifier\ndt = DecisionTreeClassifier(random_state=42)\ndt.fit(X_train, y_train)\nprint(dt.score(X_train, y_train), dt.score(X_test, y_test))\n''',
+              'plot_tree로 최대 깊이': '''# plot_tree로 최대 깊이 2까지 결정트리 시각화하기\nimport matplotlib.pyplot as plt\nplt.figure(figsize=(20,10))\nfrom sklearn.tree import plot_tree\nplot_tree(dt, max_depth=2, feature_names=[\'culmen length\',\'culmen depth\',\'flipper length\',\'body mass\'], class_names=y.unique(), filled=True, rounded=True, fontsize=12)\nplt.show()\n''',
+              '테스트 데이터를 예측하고 정확도': '''# 테스트 데이터를 예측하고 정확도 구하기\ndt_pred = dt.predict(X_test)\nprint(dt.score(X_test, y_test))\n''',
+          }
+          for c in nb3['cells']:
+              if c.get('cell_type') != 'code':
+                  continue
+              src = ''.join(c.get('source', []))
+              for key, body in code_map3.items():
+                  if key in src and 'ensure_csv' not in src:
+                      lines = body.splitlines(keepends=True)
+                      if lines and not lines[-1].endswith('\n'):
+                          lines[-1] += '\n'
+                      c['source'] = lines
+                      break
+
+          p3.write_text(json.dumps(nb3, ensure_ascii=False, indent=1) + '\n', encoding='utf-8')
+          print('updated', p3)
+          PY
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "정답 실습3·4: 확인하기·마무리 답 채움 (첨부 원본 형식)" || echo no change
+          git push
