@@ -1,0 +1,21 @@
+name: Fill original-format answer notebooks
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fill:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run filler
+        run: python3 tools/fill_answer_notebooks.py
+      - name: Commit
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email github-actions[bot]@users.noreply.github.com
+          git add '**/*_정답.ipynb'
+          if git diff --staged --quiet; then echo no changes; else git commit -m "정답: 원본 노트북 형식 유지하고 빈칸만 채움" && git push; fi
