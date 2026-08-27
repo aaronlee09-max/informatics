@@ -1,0 +1,212 @@
+name: Sync matching ipynb from bloomgloom
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout local site
+        uses: actions/checkout@v4
+        with:
+          path: site
+
+      - name: Checkout bloomgloom source
+        uses: actions/checkout@v4
+        with:
+          repository: bloomgloom/informatics
+          path: bloom
+
+      - name: Overwrite same-name student .ipynb only
+        run: |
+          python3 << 'PY'
+          import shutil
+          from pathlib import Path
+
+          bloom = Path('bloom')
+          site = Path('site')
+          overwritten = []
+          skipped_new = []
+          skipped_answer = []
+
+          for src in bloom.rglob('*.ipynb'):
+              rel = src.relative_to(bloom)
+              name = src.name
+              if '_정답' in name:
+                  skipped_answer.append(str(rel))
+                  continue
+              if any(p in {'jlite', 'textbook', '.git'} for p in rel.parts):
+                  continue
+              dst = site / rel
+              if dst.exists():
+                  dst.parent.mkdir(parents=True, exist_ok=True)
+                  shutil.copy2(src, dst)
+                  overwritten.append(str(rel))
+                  print('OVERWRITE', rel)
+              else:
+                  skipped_new.append(str(rel))
+                  print('SKIP-no-local', rel)
+
+          print('OVERWRITTEN', len(overwritten))
+          for p in overwritten:
+              print(' ', p)
+          print('SKIPPED_NEW', len(skipped_new))
+          Path('/tmp/overwritten.txt').write_text('\n'.join(overwritten), encoding='utf-8')
+          PY
+
+      - name: Re-inject CSV helper into overwritten notebooks
+        run: |
+          python3 << 'PY'
+          import json
+          from pathlib import Path
+          ROOT = Path('site')
+          DIR_CSVS = {
+              'ai/ch2-1': [
+                  ('earthquake.csv', 'ai/ch2-1/earthquake.csv'),
+                  ('penguins_size.csv', 'ai/ch2-1/penguins_size.csv'),
+              ],
+              'ai/ch2-2/2': [
+                  ('jeans.csv', 'ai/ch2-2/2/jeans.csv'),
+                  ('abalone_original.csv', 'ai/ch2-2/2/abalone_original.csv'),
+              ],
+              'ai/ch2-2/3': [
+                  ('penguins_size.csv', 'ai/ch2-2/3/penguins_size.csv'),
+                  ('food.csv', 'ai/ch2-2/3/food.csv'),
+                  ('airline_passenger_satisfaction.csv', 'ai/ch2-2/3/airline_passenger_satisfaction.csv'),
+              ],
+              'ai/ch2-2/4': [
+                  ('Mall_Customers.csv', 'ai/ch2-2/4/Mall_Customers.csv'),
+                  ('caffe_menu.csv', 'ai/ch2-2/4/caffe_menu.csv'),
+              ],
+              'informatics/ch2-3': [
+                  ('navermusic_genre.csv', 'informatics/ch2-3/navermusic_genre.csv'),
+              ],
+          }
+          ENSURE = '''# CSV 자동 준비 (Colab · JupyterLite · 로컬 공통)\nimport sys\nfrom pathlib import Path\n\ndef ensure_csv(filename, repo_path):\n    candidates = [Path(filename), Path(repo_path), Path("files")/repo_path, Path("/files")/repo_path]\n    for c in candidates:\n        try:\n            if c.is_file():\n                if not Path(filename).exists():\n                    Path(filename).write_bytes(c.read_bytes())\n                return filename\n        except Exception:\n            pass\n    url = f"https://raw.githubusercontent.com/aaronlee09-max/informatics/main/{repo_path}"\n    try:\n        if sys.platform == "emscripten":\n            from pyodide.http import open_url\n            Path(filename).write_text(open_url(url).read(), encoding="utf-8")\n        else:\n            import urllib.request\n            urllib.request.urlretrieve(url, filename)\n        print("CSV 준비:", filename)\n        return filename\n    except Exception as e:\n        print("CSV 준비 실패 → URL 사용:", url, e)\n        return url\n\n'''
+          for dir_rel, csvs in DIR_CSVS.items():
+              d = ROOT / dir_rel
+              if not d.is_dir():
+                  continue
+              existing = [(n,r) for n,r in csvs if (ROOT/r).exists()]
+              if not existing:
+                  continue
+              for p in sorted(d.glob('*.ipynb')):
+                  nb = json.loads(p.read_text(encoding='utf-8'))
+                  idx = next((i for i,c in enumerate(nb['cells']) if c.get('cell_type')=='code'), None)
+                  if idx is None:
+                      continue
+                  src = ''.join(nb['cells'][idx].get('source', []))
+                  if 'def ensure_csv(' in src:
+                      continue
+                  calls = '\n'.join(f"ensure_csv({n!r}, {r!r})" for n,r in existing)
+                  new = ENSURE + calls + '\n\n' + src
+                  lines = new.splitlines(keepends=True)
+                  if lines and not lines[-1].endswith('\n'):
+                      lines[-1] += '\n'
+                  nb['cells'][idx]['source'] = lines
+                  p.write_text(json.dumps(nb, ensure_ascii=False, indent=1)+'\n', encoding='utf-8')
+                  print('csv-patched', p)
+          PY
+
+      - name: Add Colab + site-run buttons for 정답 notebooks
+        run: |
+          python3 << 'PY'
+          from pathlib import Path
+          import re
+
+          site = Path('site')
+
+          def add_ai_index_buttons(html: str) -> str:
+              if '정답Colab' in html:
+                  return html
+              def repl(m):
+                  href = m.group(1)
+                  path = href.lstrip('./')
+                  colab = f'https://colab.research.google.com/github/aaronlee09-max/informatics/blob/main/ai/{path}'
+                  jlite = f'./jlite/notebooks/index.html?path={path}'
+                  return (
+                      f'<a class="download run" href="{colab}" target="_blank" rel="noopener">정답Colab</a>'
+                      f'<a class="download site" href="{jlite}">정답실행</a>'
+                      + m.group(0)
+                  )
+              return re.sub(
+                  r'<a class="download answer" href="(\./[^"\s]+_정답\.ipynb)" download>정답</a>',
+                  repl,
+                  html,
+              )
+
+          ai_index = site / 'ai' / 'index.html'
+          if ai_index.exists():
+              t = ai_index.read_text(encoding='utf-8')
+              nt = add_ai_index_buttons(t)
+              if nt != t:
+                  ai_index.write_text(nt, encoding='utf-8')
+                  print('patched ai/index.html')
+              else:
+                  print('ai/index.html already has 정답 run buttons or no matches')
+
+          # Rebuild AI lab page with student + answer run buttons
+          labs = [
+              ('필수', 'green', '실습1 · 펭귄 데이터 탐색', 'ai/ch2-1/실습1_펭귄_데이터_탐색하기.ipynb', 'ch2-1'),
+              ('선택', 'orange', '선택활동1 · 지진 데이터 분석', 'ai/ch2-1/선택활동1_지진_데이터_분석하기.ipynb', 'ch2-1'),
+              ('필수', 'green', '실습2 · 선형 회귀', 'ai/ch2-2/2/실습2_목둘레로_허리둘레를_예측하는_선형_회귀_모델_구현하기.ipynb', 'ch2-2'),
+              ('선택', 'orange', '선택활동2 · 다중 선형 회귀', 'ai/ch2-2/2/선택활동2_다중_선형_회귀로_허리둘레를_예측해_보기.ipynb', 'ch2-2'),
+              ('선택', 'orange', '선택활동3 · 전복 나이 예측', 'ai/ch2-2/2/선택활동3_전복의_나이를_예측해_해양_생태계_보존하기.ipynb', 'ch2-2'),
+              ('간단', 'blue', '간단실습 · 과일/채소 분류', 'ai/ch2-2/3/간단실습_당도와_아삭함으로_과일인지_채소인지_분류하기.ipynb', 'ch2-2'),
+              ('필수', 'green', '실습3 · 펭귄 종 분류', 'ai/ch2-2/3/실습3_펭귄_종_분류_모델_구현하기.ipynb', 'ch2-2'),
+              ('선택', 'orange', '선택활동4 · 로지스틱·kNN', 'ai/ch2-2/3/선택활동4_로지스틱_회귀와_kNN으로_펭귄_종_분류하기.ipynb', 'ch2-2'),
+              ('선택', 'orange', '선택활동5 · 항공사 고객 만족도', 'ai/ch2-2/3/선택활동5_항공사_고객_만족도_서비스_모델_만들기.ipynb', 'ch2-2'),
+              ('필수', 'green', '실습4 · 쇼핑몰 고객 군집', 'ai/ch2-2/4/실습4_쇼핑몰_고객_군집_모델_구현하기.ipynb', 'ch2-2'),
+              ('선택', 'orange', '선택활동6 · 카페 음료 추천', 'ai/ch2-2/4/선택활동6_당신의_취향에_맞는_카페_음료_추천하기.ipynb', 'ch2-2'),
+          ]
+          items = []
+          for kind, color, title, repo_path, _grp in labs:
+              rel = repo_path[len('ai/'):]
+              ans = repo_path.replace('.ipynb', '_정답.ipynb')
+              ans_rel = ans[len('ai/'):]
+              jlite = repo_path[len('ai/'):]
+              jlite_ans = ans_rel
+              items.append(f'''<div class="lab-item"><div><span class="pill {color}">{kind}</span><b>{title}</b></div><div class="lab-actions">
+<a class="run" href="https://colab.research.google.com/github/aaronlee09-max/informatics/blob/main/{repo_path}" target="_blank" rel="noopener">Colab</a>
+<a class="site" href="../jlite/notebooks/index.html?path={jlite}">사이트실행</a>
+<a class="dl" href="../{rel}" download>원본</a>
+<a class="ans" href="https://colab.research.google.com/github/aaronlee09-max/informatics/blob/main/{ans}" target="_blank" rel="noopener">정답Colab</a>
+<a class="site-ans" href="../jlite/notebooks/index.html?path={jlite_ans}">정답실행</a>
+<a class="dl ansdl" href="../{ans_rel}" download>정답</a>
+</div></div>''')
+          lab_html = '''<!doctype html><html lang="ko"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>AI 실습 랩 · 웹에서 실행</title><link rel="stylesheet" href="../textbook/styles.css" /><style>.lab-page{max-width:980px;margin:0 auto;padding:28px 20px 72px}.lab-list{display:grid;gap:10px;margin-bottom:28px}.lab-item{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fff;border:1px solid #c5d8ea;border-radius:14px;padding:14px 16px;box-shadow:0 6px 18px rgba(31,95,154,.06);flex-wrap:wrap}.lab-item b{font-size:15px}.pill{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:3px 10px;margin-right:8px;color:#fff}.pill.green{background:#2f9e6a}.pill.orange{background:#d97706}.pill.blue{background:#2f78b8}.lab-actions{display:flex;gap:8px;flex-wrap:wrap}.lab-actions a{text-decoration:none;font-size:13px;font-weight:700;border-radius:999px;padding:8px 14px}.run{background:#2f78b8;color:#fff}.site{background:#059669;color:#fff}.dl{background:#fff;color:#1f5f9a;border:1px solid #c5d8ea}.ans{background:#c2410c;color:#fff}.site-ans{background:#b45309;color:#fff}.ansdl{border-color:#fcd34d;color:#b45309}.note{background:#e8f3fb;border-radius:14px;padding:14px 16px;color:#1c3f66;font-size:14px;line-height:1.55;margin-bottom:22px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}.top a.back{color:#2f78b8;font-weight:800;text-decoration:none}</style></head><body><div class="lab-page"><div class="top"><a class="back" href="../">← 인공지능 기초</a><a class="back" href="../textbook/">인터랙티브 교과서</a></div><h1 style="margin:0 0 8px;font-size:clamp(28px,4vw,40px)">AI 실습 랩</h1><p style="color:#5a6d82;margin:0 0 18px">학생용과 정답 노트북 모두 Colab / 사이트실행이 됩니다.</p><div class="note"><b>사용 팁</b><br>1) <b>Colab</b> → Google 계정으로 열기 → 런타임 실행 (원본은 수정되지 않음)<br>2) <b>사이트실행</b> → JupyterLite (저장 안 됨, 새로고침 시 초기화)<br>3) <b>정답Colab / 정답실행</b> → 선생님용</div><div class="lab-list">''' + '\n'.join(items) + '''</div><p style="text-align:center;color:#5a6d82;font-size:12px;margin-top:28px">Colab · JupyterLite 사이트 실행</p></div>
+<style id="site-nav-style">
+.site-nav{position:fixed;top:12px;left:12px;z-index:9999;display:flex;gap:8px;flex-wrap:wrap}
+.site-nav a{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:999px;
+background:rgba(23,32,51,.9);color:#fff!important;font-weight:800;font-size:14px;text-decoration:none!important;
+font-family:"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
+box-shadow:0 4px 16px rgba(0,0,0,.28);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12)}
+.site-nav a.home{background:rgba(37,99,235,.92)}
+@media print{.site-nav{display:none!important}}
+</style>
+<nav class="site-nav" aria-label="페이지 이동"><a href="../" title="이전 화면으로">← 이전</a><a class="home" href="/" title="홈으로 가기">홈</a></nav>
+</body></html>
+'''
+          lab_path = site / 'ai' / 'lab' / 'index.html'
+          lab_path.parent.mkdir(parents=True, exist_ok=True)
+          lab_path.write_text(lab_html, encoding='utf-8')
+          print('rewrote ai/lab/index.html')
+          PY
+
+      - name: Commit
+        working-directory: site
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No changes"
+          else
+            git commit -m "sync: bloomgloom 같은 이름 .ipynb만 덮어쓰기 + 정답 Colab/사이트실행 버튼"
+            git push
+          fi
