@@ -3,7 +3,6 @@ import json, re, shutil
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-BLOOM = Path('/tmp/bloom')
 
 DIR_CSVS = {
     'ai/ch2-1': [('earthquake.csv', 'ai/ch2-1/earthquake.csv'), ('penguins_size.csv', 'ai/ch2-1/penguins_size.csv')],
@@ -93,10 +92,14 @@ def patch_ai_index():
     else:
         print('no answer buttons matched')
 
+def find_bloom():
+    for cand in [Path('bloom'), Path('/tmp/bloom'), ROOT / 'bloom']:
+        if cand.exists():
+            return cand
+    raise SystemExit('bloom checkout missing')
+
 def main():
-    bloom = BLOOM if BLOOM.exists() else Path('/tmp/upstream')
-    if not bloom.exists():
-        raise SystemExit('bloom checkout missing')
+    bloom = find_bloom()
     n = 0
     for src in bloom.rglob('*.ipynb'):
         rel = src.relative_to(bloom)
