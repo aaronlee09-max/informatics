@@ -12,10 +12,41 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run filler
-        run: python3 tools/fill_answer_notebooks.py
+        run: |
+          python3 << 'PY'
+          from pathlib import Path
+          import json
+          src = Path('tools/fill_answer_notebooks.py').read_text(encoding='utf-8')
+          ns = {}
+          exec(compile(src.replace("if __name__", "if False"), 'fill_answer_notebooks.py', 'exec'), ns)
+          def pick(name):
+              if '_정답' in name:
+                  return None
+              if '도로_균열' in name:
+                  return ns['fill_s6']
+              if '숫자_분류_모델' in name:
+                  return ns['fill_s5']
+              if '쇼핑몰_고객_군집' in name:
+                  return ns['fill_s4']
+              if '폭귄_종_분류_모델_구현하기' in name and '로지스틱' not in name:
+                  return ns['fill_s3']
+              return None
+          root = Path('.')
+          for student in sorted(root.rglob('*.ipynb')):
+              if 'jlite' in student.parts:
+                  continue
+              fn = pick(student.name)
+              if fn is None:
+                  continue
+              nb = json.loads(student.read_text(encoding='utf-8'))
+              fn(nb)
+              out = student.with_name(student.stem + '_정답.ipynb')
+              out.write_text(json.dumps(nb, ensure_ascii=False, indent=1) + '\n', encoding='utf-8')
+              print('wrote', out, 'cells', len(nb['cells']))
+          PY
       - name: Commit
         run: |
           git config user.name github-actions[bot]
           git config user.email github-actions[bot]@users.noreply.github.com
           git add '**/*_정답.ipynb'
-          if git diff --staged --quiet; then echo no changes; else git commit -m "정답: 원본 노트북 형식 유지하고 빈칸만 채움" && git push; fi
+          if git diff --staged --quiet; then echo no changes; else git commit -m "정답: fill empty code cells from student templates" && git push; fi
