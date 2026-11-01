@@ -42,6 +42,7 @@ jobs:
             --exclude='ai/ch3-1/' \
             --exclude='ai/ch3-2/' \
             --exclude='ai/ch4-1/' \
+            --exclude='puzzle/' \
             --exclude='informatics/index.html' \
             --exclude='informatics/ch2-3/index.html' \
             --exclude='informatics/ch2-3/*.ipynb' \
